@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#eee6d6;}
+a{color:#8a5f1e;} a:hover{color:#5f3f0f;}
+button,input,textarea{font-family:inherit;}
+</style>
+</helmet>
+<div style="min-height:100dvh;background:#eee6d6;font-family:'Space Mono',monospace;color:#1a1712;">
+  <sc-if value="{{ notAuthed }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:#A87A2F;">
+      <form onSubmit="{{ login }}" style="width:min(360px,100%);background:#f5f0e6;padding:34px 30px;box-shadow:0 10px 30px rgba(35,24,8,.35);display:flex;flex-direction:column;gap:14px;">
+        <div style="text-align:center;margin-bottom:8px;">
+          <span style="display:block;font-size:12px;letter-spacing:.8em;margin-left:.8em;font-weight:700;">osteria</span>
+          <span style="display:block;width:150px;height:2.5px;background:#1a1712;margin:8px auto;"></span>
+          <span style="display:block;font-family:'Archivo Black',sans-serif;font-size:26px;">LO SP!ETATO</span>
+          <span style="display:block;font-size:11px;letter-spacing:.25em;text-transform:uppercase;margin-top:10px;color:#4a4438;">Area gestori</span>
+        </div>
+        <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;">Utente
+          <input type="text" autocomplete="username" value="{{ u }}" onChange="{{ onU }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;">
+        </label>
+        <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;">Password
+          <input type="password" autocomplete="current-password" value="{{ p }}" onChange="{{ onP }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;">
+        </label>
+        <sc-if value="{{ err }}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin:0;font-size:12px;color:#9c2b1a;">Credenziali non valide. Riprova.</p>
+        </sc-if>
+        <button type="submit" style="min-height:48px;background:#1a1712;color:#f5f0e6;border:none;font-size:13px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;">Accedi</button>
+        <p style="margin:0;text-align:center;font-size:11px;"><a href="Menu Cliente.dc.html">← Torna al menù</a></p>
+      </form>
+    </div>
+  </sc-if>
+  <sc-if value="{{ authed }}" hint-placeholder-val="{{ false }}">
+    <header style="background:#A87A2F;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;flex-wrap:wrap;">
+      <span style="font-family:'Archivo Black',sans-serif;font-size:18px;">LO SP!ETATO <span style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;">· gestione menù</span></span>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <a href="Menu Cliente.dc.html" style="color:#fdf6e8;font-size:12px;">Vedi menù</a>
+        <button onClick="{{ logout }}" style="min-height:40px;background:#1a1712;color:#f5f0e6;border:none;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:8px 14px;cursor:pointer;">Esci</button>
+      </div>
+    </header>
+    <main style="max-width:760px;margin:0 auto;padding:20px 16px 60px;box-sizing:border-box;">
+      <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+        <p role="status" style="position:fixed;bottom:16px;right:16px;z-index:20;margin:0;background:#1a1712;color:#f5f0e6;font-size:12px;padding:10px 16px;box-shadow:0 4px 14px rgba(0,0,0,.3);">{{ toast }}</p>
+      </sc-if>
+      <section aria-label="Impostazioni generali" style="background:#f5f0e6;border:1.5px solid #1a1712;padding:18px;display:flex;flex-direction:column;gap:12px;margin-bottom:22px;">
+        <h2 style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;">Impostazioni</h2>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;flex:1 1 130px;min-width:120px;">Coperto (€)
+            <input type="number" step="0.5" min="0" value="{{ copertoVal }}" onChange="{{ onCoperto }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;width:100%;">
+          </label>
+          <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:220px;">Indirizzo
+            <input type="text" value="{{ infoIndirizzo }}" onChange="{{ onIndirizzo }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;width:100%;">
+          </label>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;flex:1 1 200px;min-width:160px;">Telefono
+            <input type="text" value="{{ infoTelefono }}" onChange="{{ onTelefono }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;width:100%;">
+          </label>
+          <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:220px;">Orari (una riga per giorno)
+            <textarea rows="4" value="{{ infoOrari }}" onChange="{{ onOrari }}" style="border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:13px;box-sizing:border-box;width:100%;resize:vertical;"></textarea>
+          </label>
+        </div>
+      </section>
+      <div role="tablist" aria-label="Categorie" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="7">
+          <button role="tab" aria-selected="{{ c.active }}" onClick="{{ c.onSelect }}" style="min-height:44px;border:1.5px solid #1a1712;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:8px 14px;cursor:pointer;background:{{ c.bg }};color:{{ c.fg }};">{{ c.nome }}</button>
+        </sc-for>
+      </div>
+      <section aria-label="Piatti della categoria" style="display:flex;flex-direction:column;gap:8px;">
+        <sc-for list="{{ items }}" as="v" hint-placeholder-count="4">
+          <article style="background:#f5f0e6;border:1.5px solid #1a1712;padding:12px 14px;opacity:{{ v.rowOpacity }};">
+            <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">
+              <strong style="font-size:13px;text-transform:uppercase;">{{ v.nome }}</strong>
+              <span style="font-size:13px;font-weight:700;margin-left:auto;">{{ v.prezzoFmt }}</span>
+            </div>
+            <sc-if value="{{ v.desc }}" hint-placeholder-val="{{ false }}"><p style="margin:4px 0 0;font-size:12px;color:#4a4438;">{{ v.desc }}</p></sc-if>
+            <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center;">
+              <sc-if value="{{ v.delGiorno }}" hint-placeholder-val="{{ false }}"><span style="background:#A87A2F;color:#fff;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;">Del giorno</span></sc-if>
+              <sc-if value="{{ v.nascosto }}" hint-placeholder-val="{{ false }}"><span style="background:#4a4438;color:#fff;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;">Nascosto</span></sc-if>
+              <span style="font-size:10px;color:#4a4438;">{{ v.allergeniStr }}</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+              <button onClick="{{ v.onUp }}" aria-label="Sposta su {{ v.nome }}" style="min-width:44px;min-height:40px;border:1.5px solid #1a1712;background:#fff;cursor:pointer;font-size:14px;">↑</button>
+              <button onClick="{{ v.onDown }}" aria-label="Sposta giù {{ v.nome }}" style="min-width:44px;min-height:40px;border:1.5px solid #1a1712;background:#fff;cursor:pointer;font-size:14px;">↓</button>
+              <button onClick="{{ v.onEdit }}" style="min-height:40px;border:1.5px solid #1a1712;background:#1a1712;color:#f5f0e6;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;cursor:pointer;">Modifica</button>
+              <button onClick="{{ v.onToggleHidden }}" style="min-height:40px;border:1.5px solid #1a1712;background:#fff;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;cursor:pointer;">{{ v.hideLabel }}</button>
+              <button onClick="{{ v.onDelete }}" style="min-height:40px;border:1.5px solid #9c2b1a;background:#fff;color:#9c2b1a;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;cursor:pointer;">Elimina</button>
+            </div>
+          </article>
+        </sc-for>
+      </section>
+      <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+        <section aria-label="Modifica piatto" style="margin-top:14px;background:#fff;border:2px solid #A87A2F;padding:18px;display:flex;flex-direction:column;gap:12px;">
+          <h2 style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#8a5f1e;">{{ editTitle }}</h2>
+          <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;">Nome del piatto
+            <input type="text" value="{{ dNome }}" onChange="{{ onDNome }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;">
+          </label>
+          <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;">Descrizione (facoltativa)
+            <textarea rows="2" value="{{ dDesc }}" onChange="{{ onDDesc }}" style="border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea>
+          </label>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+            <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;flex:1 1 130px;min-width:120px;max-width:200px;">Prezzo (€)
+              <input type="number" step="0.5" min="0" value="{{ dPrezzo }}" onChange="{{ onDPrezzo }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;width:100%;">
+            </label>
+            <label style="font-size:12px;display:flex;gap:8px;align-items:center;min-height:44px;cursor:pointer;">
+              <input type="checkbox" checked="{{ dDelGiorno }}" onChange="{{ onDDelGiorno }}" style="width:20px;height:20px;">Piatto del giorno
+            </label>
+          </div>
+          <div>
+            <p style="margin:0 0 6px;font-size:12px;">Allergeni</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <sc-for list="{{ allergenOpts }}" as="al" hint-placeholder-count="8">
+                <button type="button" onClick="{{ al.onToggle }}" aria-pressed="{{ al.active }}" style="min-height:40px;border:1.5px solid #1a1712;font-size:11px;padding:6px 10px;cursor:pointer;background:{{ al.bg }};color:{{ al.fg }};">{{ al.code }} · {{ al.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onClick="{{ onSaveDraft }}" style="min-height:48px;background:#1a1712;color:#f5f0e6;border:none;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:10px 20px;cursor:pointer;">Salva piatto</button>
+            <button onClick="{{ onCancelDraft }}" style="min-height:48px;background:none;border:1.5px solid #1a1712;color:#1a1712;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:10px 20px;cursor:pointer;">Annulla</button>
+          </div>
+        </section>
+      </sc-if>
+      <button onClick="{{ onAdd }}" style="margin-top:14px;min-height:48px;width:100%;background:#A87A2F;color:#fff;border:none;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;">+ Aggiungi piatto</button>
+      <div style="margin-top:26px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <button onClick="{{ onReset }}" style="min-height:44px;background:none;border:1.5px solid #9c2b1a;color:#9c2b1a;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:8px 14px;cursor:pointer;">Ripristina menù predefinito</button>
+        <span style="font-size:11px;color:#4a4438;">Le modifiche sono visibili subito sul menù dei clienti.</span>
+      </div>
+    </main>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { authed: false, u: '', p: '', err: false, data: null, cat: 'antipasti', editing: null, draft: null, toast: '' };
+  async componentDidMount() {
+    this.m = await import('./menu-data.js');
+    let d = null;
+    try { d = JSON.parse(localStorage.getItem(this.m.MENU_KEY)); } catch (e) {}
+    this.setState({ data: d || JSON.parse(JSON.stringify(this.m.DEFAULT_MENU)), authed: sessionStorage.getItem('spietato-admin') === '1' });
+  }
+  save(data, msg) {
+    localStorage.setItem(this.m.MENU_KEY, JSON.stringify(data));
+    clearTimeout(this.tt);
+    this.tt = setTimeout(() => this.setState({ toast: '' }), 2200);
+    this.setState({ data, toast: msg || 'Salvato ✓' });
+  }
+  mut(fn, msg) { const d = JSON.parse(JSON.stringify(this.state.data)); fn(d); this.save(d, msg); }
+  cat(d) { return (d || this.state.data).categorie.find(c => c.id === this.state.cat); }
+  fmt(n) { const v = Number(n) || 0; return v % 1 ? '€ ' + v.toFixed(2).replace('.', ',') : '€ ' + v; }
+  renderVals() {
+    const s = this.state, d = s.data;
+    const vals = {
+      authed: s.authed && !!d, notAuthed: !s.authed,
+      u: s.u, p: s.p, err: s.err, toast: s.toast,
+      onU: e => this.setState({ u: e.target.value }),
+      onP: e => this.setState({ p: e.target.value }),
+      login: e => {
+        e.preventDefault();
+        if (s.u.trim() === 'spietato' && s.p === 'nicole123') { sessionStorage.setItem('spietato-admin', '1'); this.setState({ authed: true, err: false, p: '' }); }
+        else this.setState({ err: true });
+      },
+      logout: () => { sessionStorage.removeItem('spietato-admin'); this.setState({ authed: false, u: '', p: '' }); }
+    };
+    if (!d) return vals;
+    const cat = this.cat();
+    Object.assign(vals, {
+      copertoVal: d.coperto, infoIndirizzo: d.info.indirizzo, infoTelefono: d.info.telefono, infoOrari: d.info.orari,
+      onCoperto: e => this.mut(x => { x.coperto = Number(e.target.value) || 0; }),
+      onIndirizzo: e => this.mut(x => { x.info.indirizzo = e.target.value; }),
+      onTelefono: e => this.mut(x => { x.info.telefono = e.target.value; }),
+      onOrari: e => this.mut(x => { x.info.orari = e.target.value; }),
+      cats: d.categorie.map(c => ({
+        nome: c.nome, active: c.id === s.cat,
+        bg: c.id === s.cat ? '#1a1712' : '#f5f0e6', fg: c.id === s.cat ? '#f5f0e6' : '#1a1712',
+        onSelect: () => this.setState({ cat: c.id, editing: null, draft: null })
+      })),
+      items: cat.voci.map((v, i) => ({
+        ...v,
+        prezzoFmt: this.fmt(v.prezzo),
+        rowOpacity: v.nascosto ? 0.55 : 1,
+        allergeniStr: (v.allergeni || []).length ? 'Allergeni: ' + v.allergeni.join(', ') : '',
+        hideLabel: v.nascosto ? 'Mostra' : 'Nascondi',
+        onUp: () => { if (i > 0) this.mut(x => { const vv = this.cat(x).voci; [vv[i - 1], vv[i]] = [vv[i], vv[i - 1]]; }, 'Ordine aggiornato ✓'); },
+        onDown: () => { if (i < cat.voci.length - 1) this.mut(x => { const vv = this.cat(x).voci; [vv[i + 1], vv[i]] = [vv[i], vv[i + 1]]; }, 'Ordine aggiornato ✓'); },
+        onEdit: () => this.setState({ editing: v.id, draft: JSON.parse(JSON.stringify(v)) }),
+        onToggleHidden: () => this.mut(x => { const t = this.cat(x).voci.find(z => z.id === v.id); t.nascosto = !t.nascosto; }, v.nascosto ? 'Piatto visibile ✓' : 'Piatto nascosto ✓'),
+        onDelete: () => { if (confirm('Eliminare "' + v.nome + '"?')) this.mut(x => { const c2 = this.cat(x); c2.voci = c2.voci.filter(z => z.id !== v.id); }, 'Piatto eliminato ✓'); }
+      })),
+      isEditing: !!s.draft,
+      editTitle: s.editing === 'new' ? 'Nuovo piatto — ' + cat.nome : 'Modifica piatto — ' + cat.nome,
+      dNome: s.draft ? s.draft.nome : '', dDesc: s.draft ? s.draft.desc : '',
+      dPrezzo: s.draft ? s.draft.prezzo : 0, dDelGiorno: s.draft ? s.draft.delGiorno : false,
+      onDNome: e => this.setState({ draft: { ...s.draft, nome: e.target.value } }),
+      onDDesc: e => this.setState({ draft: { ...s.draft, desc: e.target.value } }),
+      onDPrezzo: e => this.setState({ draft: { ...s.draft, prezzo: Number(e.target.value) || 0 } }),
+      onDDelGiorno: e => this.setState({ draft: { ...s.draft, delGiorno: e.target.checked } }),
+      allergenOpts: Object.entries(this.m.ALLERGENI).map(([code, label]) => {
+        const active = s.draft && s.draft.allergeni.includes(code);
+        return {
+          code, label, active,
+          bg: active ? '#A87A2F' : '#fff', fg: active ? '#fff' : '#1a1712',
+          onToggle: () => this.setState({ draft: { ...s.draft, allergeni: active ? s.draft.allergeni.filter(x => x !== code) : [...s.draft.allergeni, code] } })
+        };
+      }),
+      onSaveDraft: () => {
+        if (!s.draft.nome.trim()) { this.setState({ toast: 'Inserisci il nome del piatto' }); return; }
+        this.mut(x => {
+          const vv = this.cat(x).voci;
+          if (s.editing === 'new') vv.push(s.draft);
+          else { const i = vv.findIndex(z => z.id === s.editing); if (i > -1) vv[i] = s.draft; }
+        }, s.editing === 'new' ? 'Piatto aggiunto ✓' : 'Piatto salvato ✓');
+        this.setState({ editing: null, draft: null });
+      },
+      onCancelDraft: () => this.setState({ editing: null, draft: null }),
+      onAdd: () => this.setState({ editing: 'new', draft: { id: 'v' + Date.now(), nome: '', desc: '', prezzo: 0, allergeni: [], nascosto: false, delGiorno: false } }),
+      onReset: () => { if (confirm('Ripristinare il menù predefinito? Le modifiche andranno perse.')) { localStorage.removeItem(this.m.MENU_KEY); this.save(JSON.parse(JSON.stringify(this.m.DEFAULT_MENU)), 'Menù ripristinato ✓'); } }
+    });
+    return vals;
+  }
+}
+</script>
+</body>
+</html>
