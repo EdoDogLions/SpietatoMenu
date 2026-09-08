@@ -11,6 +11,8 @@
   :root{
     --ottone:#A87A2F; --ink:#1a1712; --carta:#f5f0e6; --carta2:#f0e9db;
     --sec:#4a4438; --hair:#9a8f7c; --err:#9c2b1a; --link:#8a5f1e;
+    --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+    --safe-r:env(safe-area-inset-right,0px); --safe-l:env(safe-area-inset-left,0px);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--ottone);}
@@ -18,11 +20,12 @@
   a{color:var(--link);} a:hover{color:#5f3f0f;}
   button{font-family:inherit;}
 
-  .stage{min-height:100dvh;background:var(--ottone);display:flex;flex-direction:column;align-items:center;padding:12px 12px 8px;}
-  .book{width:min(430px,100%);flex:1;min-height:0;display:flex;flex-direction:column;position:relative;background:var(--carta);border-radius:4px;box-shadow:0 10px 30px rgba(35,24,8,.35);overflow:hidden;perspective:1600px;}
+  /* Menù a tutto schermo */
+  .stage{min-height:100dvh;background:var(--ottone);display:flex;flex-direction:column;}
+  .book{width:100%;max-width:600px;margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column;position:relative;background:var(--carta);overflow:hidden;perspective:1600px;}
   .stack{position:relative;flex:1;min-height:0;}
 
-  .sheet{position:absolute;inset:0;background:var(--carta);padding:26px 26px 18px 34px;overflow:hidden;}
+  .sheet{position:absolute;inset:0;background:var(--carta);padding:calc(24px + var(--safe-t)) calc(26px + var(--safe-r)) calc(22px + var(--safe-b)) calc(34px + var(--safe-l));overflow:hidden;}
   .content{overflow-y:auto;overflow-x:hidden;touch-action:pan-y;z-index:1;}
   .under{z-index:2;}
   .flip{z-index:4;transform-origin:left center;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:6px 0 18px rgba(35,24,8,.25);will-change:transform;}
@@ -34,8 +37,8 @@
   @keyframes pageIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
 
   /* Selettore lingua */
-  .langWrap{position:absolute;top:10px;right:10px;z-index:3;}
-  .langBtn{display:inline-flex;align-items:center;gap:6px;min-height:34px;background:var(--carta2);border:1.5px solid var(--ink);color:var(--ink);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;cursor:pointer;}
+  .langWrap{position:absolute;top:calc(10px + var(--safe-t));right:calc(10px + var(--safe-r));z-index:6;}
+  .langBtn{display:inline-flex;align-items:center;gap:6px;min-height:34px;background:var(--carta2);border:1.5px solid var(--ink);color:var(--ink);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;cursor:pointer;box-shadow:0 2px 8px rgba(35,24,8,.12);}
   .langBtn .car{font-size:9px;transition:transform .2s ease;}
   .langBtn[aria-expanded="true"] .car{transform:rotate(180deg);}
   .langMenu{position:absolute;top:calc(100% + 6px);right:0;min-width:158px;background:var(--carta);border:1.5px solid var(--ink);box-shadow:0 10px 24px rgba(35,24,8,.28);display:flex;flex-direction:column;}
@@ -46,7 +49,7 @@
 
   /* Copertina */
   .cover{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 0;}
-  .cover img{width:220px;max-width:80%;display:block;margin:0 auto;box-shadow:0 6px 18px rgba(35,24,8,.25);}
+  .cover img{width:230px;max-width:80%;display:block;margin:0 auto;box-shadow:0 6px 18px rgba(35,24,8,.25);}
   .cover .word{margin:16px 0 0;font-size:13px;letter-spacing:.35em;text-transform:uppercase;}
   .cover .coperto{margin:22px 0 0;font-size:13px;border:1.5px solid var(--ink);padding:5px 14px;}
   .special{margin-top:26px;background:var(--ottone);color:#fff;padding:12px 16px;max-width:280px;box-shadow:0 6px 16px rgba(35,24,8,.22);}
@@ -76,24 +79,9 @@
   .info p{margin:0;}
   .legend ul{list-style:none;margin:6px 0 0;padding:0;font-size:12px;color:var(--sec);display:flex;flex-direction:column;gap:4px;}
   .legend .code{border:1px solid var(--hair);font-size:9px;padding:1px 5px;margin-right:6px;}
+  .admin-link{margin-top:6px;font-size:11px;color:var(--link);align-self:flex-start;}
 
-  /* Indice */
-  .index{z-index:6;overflow-y:auto;}
-  .index .list{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
-  .index .entry{min-height:48px;text-align:left;background:none;border:1.5px solid var(--ink);color:var(--ink);font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;transition:background .12s,color .12s;}
-  .index .entry:hover,.index .entry:focus-visible{background:var(--ink);color:var(--carta);outline:none;}
-  .index .close{margin-top:18px;min-height:44px;width:100%;background:var(--ottone);border:0;color:#fff;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:10px 18px;cursor:pointer;}
-
-  /* Barra di navigazione */
-  .nav{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1.5px solid var(--ink);background:var(--carta2);position:relative;z-index:7;}
-  .nav .arrow{min-width:48px;min-height:48px;background:var(--ink);color:var(--carta);border:0;font-size:20px;cursor:pointer;transition:opacity .15s;}
-  .nav .arrow:active{transform:translateY(1px);}
-  .nav .arrow:disabled{opacity:.32;cursor:default;}
-  .nav .mid{flex:1;min-height:48px;background:none;border:1.5px solid var(--ink);color:var(--ink);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-
-  .admin-link{margin:10px 0 2px;font-size:11px;color:#fdf6e8;}
   :focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
-
   @media (prefers-reduced-motion: reduce){
     .enter{animation:none;}
     .cover .hint .swipe{animation:none;}
@@ -114,26 +102,18 @@
         </button>
         <div class="langMenu" id="langMenu" role="listbox" hidden></div>
       </div>
-      <div class="sheet index" id="index" hidden role="dialog" aria-modal="true" aria-label=""></div>
     </div>
-    <nav class="nav" id="navbar" aria-label="">
-      <button class="arrow" id="prev" type="button">‹</button>
-      <button class="mid" id="mid" type="button"></button>
-      <button class="arrow" id="next" type="button">›</button>
-    </nav>
   </div>
-  <a class="admin-link" id="adminLink" href="admin.html">Area gestori</a>
 </div>
 
 <script type="module">
 import { DEFAULT_MENU, ALLERGENI, MENU_KEY } from './menu-data.js';
 import * as supa from './supa.js';
-import { LANGS, UI, t, catName, allergName, translate, translateLines } from './i18n.js';
+import { LANGS, UI, t, catName, allergName, translate, translateLines, peek, peekLines } from './i18n.js';
 
 const $ = id => document.getElementById(id);
 const el = { content:$('content'), under:$('under'), flip:$('flip'), flipbody:$('flipbody'), shade:$('shade'),
-  index:$('index'), stack:$('stack'), prev:$('prev'), next:$('next'), mid:$('mid'), navbar:$('navbar'),
-  langWrap:$('langWrap'), langBtn:$('langBtn'), langMenu:$('langMenu'), langCode:$('langCode'), adminLink:$('adminLink') };
+  stack:$('stack'), langWrap:$('langWrap'), langBtn:$('langBtn'), langMenu:$('langMenu'), langCode:$('langCode') };
 
 const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
@@ -142,8 +122,7 @@ const state = {
   idx: 0,
   data: null,
   lang: (localStorage.getItem('spietato-lang') || 'it'),
-  token: 0,          // invalida le traduzioni asincrone dopo un nuovo render
-  overlay: false     // true quando l'indice è aperto
+  token: 0            // invalida le traduzioni asincrone dopo un nuovo render
 };
 if (!LANGS.some(l => l.code === state.lang)) state.lang = 'it';
 
@@ -195,21 +174,31 @@ function priceAria(n) {
   return (state.lang === 'en' ? v.toString() : v.toString().replace('.', ',')) + ' ' + t(state.lang, 'euro');
 }
 
-/* ---------- Traduzione progressiva ---------- */
-// Imposta il testo italiano subito, poi lo sostituisce quando arriva la traduzione.
+/* ---------- Traduzione: sincrona se in cache, altrimenti progressiva ---------- */
 function mt(node, italian, token) {
-  node.textContent = italian || '';
-  if (state.lang === 'it' || !italian) return;
-  translate(italian, state.lang).then(tx => {
-    if (node.isConnected && token === state.token) node.textContent = tx;
-  });
+  if (state.lang === 'it' || !italian) { node.textContent = italian || ''; return; }
+  const hit = peek(italian, state.lang);
+  if (hit != null) { node.textContent = hit; return; }              // già in cache: una sola scrittura
+  node.textContent = italian;                                       // intanto l'italiano
+  translate(italian, state.lang).then(tx => { if (node.isConnected && token === state.token) node.textContent = tx; });
 }
 function mtLines(node, italian, token) {
-  node.textContent = italian || '';
-  if (state.lang === 'it' || !italian) return;
-  translateLines(italian, state.lang).then(tx => {
-    if (node.isConnected && token === state.token) node.textContent = tx;
-  });
+  if (state.lang === 'it' || !italian) { node.textContent = italian || ''; return; }
+  const hit = peekLines(italian, state.lang);
+  if (hit != null) { node.textContent = hit; return; }
+  node.textContent = italian;
+  translateLines(italian, state.lang).then(tx => { if (node.isConnected && token === state.token) node.textContent = tx; });
+}
+// Riempie in background la cache della lingua scelta, così lo sfoglio è già fluido.
+function prewarm() {
+  if (state.lang === 'it' || !state.data) return;
+  const set = new Set();
+  for (const c of state.data.categorie) for (const v of c.voci) { if (v.nome) set.add(v.nome); if (v.desc) set.add(v.desc); }
+  if (state.data.info && state.data.info.orari) state.data.info.orari.split('\n').forEach(l => l.trim() && set.add(l));
+  const list = [...set].filter(txt => peek(txt, state.lang) == null);
+  let i = 0; const N = 3;                                            // concorrenza contenuta
+  const run = () => { if (i < list.length) translate(list[i++], state.lang).finally(run); };
+  for (let k = 0; k < N && k < list.length; k++) run();
 }
 
 /* ---------- Costruzione DOM di una pagina ---------- */
@@ -219,7 +208,28 @@ function h(tag, cls, txt) {
   if (txt != null) n.textContent = txt;
   return n;
 }
-
+function buildItem(v, lang, token) {
+  const li = h('li', 'item');
+  const line = h('div', 'line');
+  const nm = h('span', 'nm'); mt(nm, v.nome, token);
+  const price = h('span', 'price', fmt(v.prezzo));
+  price.setAttribute('aria-label', priceAria(v.prezzo));
+  line.appendChild(nm); line.appendChild(h('span', 'leader')); line.appendChild(price);
+  li.appendChild(line);
+  if (v.desc) { const d = h('p', 'desc'); mt(d, v.desc, token); li.appendChild(d); }
+  const tags = h('div', 'tags');
+  if (v.delGiorno) tags.appendChild(h('span', 'badge', t(lang, 'pdg')));
+  for (const code of (v.allergeni || [])) {
+    const ab = document.createElement('abbr');
+    ab.className = 'allerg'; ab.textContent = code;
+    const full = allergName(code, lang);
+    ab.title = t(lang, 'contains') + ' ' + full;
+    ab.setAttribute('aria-label', t(lang, 'contains') + ' ' + full);
+    tags.appendChild(ab);
+  }
+  if (tags.childNodes.length) li.appendChild(tags);
+  return li;
+}
 function buildPage(i, token) {
   const pgs = pages();
   const p = pgs[clamp(i, 0, pgs.length - 1)];
@@ -228,8 +238,7 @@ function buildPage(i, token) {
 
   if (p.type === 'cover') {
     const c = h('div', 'cover');
-    const img = h('img'); img.src = 'logo.png'; img.alt = 'Osteria Lo Spietato';
-    c.appendChild(img);
+    const img = h('img'); img.src = 'logo.png'; img.alt = 'Osteria Lo Spietato'; c.appendChild(img);
     c.appendChild(h('p', 'word', t(lang, 'menu')));
     if (state.data) c.appendChild(h('p', 'coperto', t(lang, 'coperto') + ' ' + fmt(state.data.coperto)));
     const sp = special();
@@ -250,30 +259,7 @@ function buildPage(i, token) {
       const sec = h('div', mi ? 'cat-section more' : 'cat-section');
       sec.appendChild(h('h2', 'htag', catName(m.cat.id, m.cat.nome, lang)));
       const ul = h('ul', 'items');
-      for (const v of m.voci) {
-        const li = h('li', 'item');
-        const line = h('div', 'line');
-        const nm = h('span', 'nm'); mt(nm, v.nome, token);
-        const price = h('span', 'price', fmt(v.prezzo));
-        price.setAttribute('aria-label', priceAria(v.prezzo));
-        line.appendChild(nm);
-        line.appendChild(h('span', 'leader'));
-        line.appendChild(price);
-        li.appendChild(line);
-        if (v.desc) { const d = h('p', 'desc'); mt(d, v.desc, token); li.appendChild(d); }
-        const tags = h('div', 'tags');
-        if (v.delGiorno) tags.appendChild(h('span', 'badge', t(lang, 'pdg')));
-        for (const code of (v.allergeni || [])) {
-          const ab = document.createElement('abbr');
-          ab.className = 'allerg'; ab.textContent = code;
-          const full = allergName(code, lang);
-          ab.title = t(lang, 'contains') + ' ' + full;
-          ab.setAttribute('aria-label', t(lang, 'contains') + ' ' + full);
-          tags.appendChild(ab);
-        }
-        if (tags.childNodes.length) li.appendChild(tags);
-        ul.appendChild(li);
-      }
+      for (const v of m.voci) ul.appendChild(buildItem(v, lang, token));
       sec.appendChild(ul);
       frag.appendChild(sec);
     });
@@ -301,6 +287,8 @@ function buildPage(i, token) {
       lu.appendChild(li);
     }
     leg.appendChild(lu); box.appendChild(leg);
+    const adm = h('a', 'admin-link', t(lang, 'admin')); adm.href = 'admin.html';
+    box.appendChild(adm);
     frag.appendChild(box);
   }
   return frag;
@@ -318,16 +306,9 @@ function renderBase(animate) {
 }
 function updateChrome() {
   const pgs = pages();
-  const n = state.idx + 1, m = pgs.length, title = pageTitle(pgs[state.idx]);
-  el.prev.disabled = state.idx === 0;
-  el.next.disabled = state.idx >= m - 1;
-  el.prev.setAttribute('aria-label', t(state.lang, 'prevPage'));
-  el.next.setAttribute('aria-label', t(state.lang, 'nextPage'));
-  el.mid.textContent = title + ' · ' + n + '/' + m;
+  const n = state.idx + 1, m = pgs.length, title = pageTitle(pgs[clamp(state.idx, 0, m - 1)]);
   el.content.setAttribute('aria-label', t(state.lang, 'menuWord') + ', ' + t(state.lang, 'pageWord') + ' ' + n + ' ' + t(state.lang, 'ofWord') + ' ' + m + ': ' + title);
-  el.navbar.setAttribute('aria-label', t(state.lang, 'navHint'));
   el.langCode.textContent = state.lang.toUpperCase();
-  el.adminLink.textContent = t(state.lang, 'admin');
   document.documentElement.lang = state.lang;
 }
 
@@ -336,17 +317,20 @@ const MAX = 165;           // gradi di rotazione a pagina girata
 let turn = null;           // { dir, target }
 let turning = false;       // animazione di rilascio in corso
 
-function fillSheet(sheet, i) { sheet.replaceChildren(buildPage(i, state.token)); }
-
+function buildInto(sheet, i) { sheet.replaceChildren(buildPage(i, state.token)); }
+// Clona la pagina già a video (con testi già tradotti): niente ricostruzione né ri-traduzione.
+function cloneCurrentInto(sheet) {
+  sheet.replaceChildren();
+  for (const node of el.content.childNodes) sheet.appendChild(node.cloneNode(true));
+}
 function prepareTurn(dir) {
   const pgs = pages();
   const target = dir === 'next' ? state.idx + 1 : state.idx - 1;
   if (target < 0 || target >= pgs.length) return false;
   turn = { dir, target };
-  if (dir === 'next') { fillSheet(el.under, target); fillSheet(el.flipbody, state.idx); }
-  else                { fillSheet(el.under, state.idx); fillSheet(el.flipbody, target); }
-  el.under.hidden = false;
-  el.flip.hidden = false;
+  if (dir === 'next') { buildInto(el.under, target); cloneCurrentInto(el.flipbody); }
+  else                { cloneCurrentInto(el.under); buildInto(el.flipbody, target); }
+  el.under.hidden = false; el.flip.hidden = false;
   setProgress(0);
   return true;
 }
@@ -372,9 +356,8 @@ function tween(from, to, dur, onDone) {
     if (k < 1) requestAnimationFrame(step); else onDone();
   })(t0);
 }
-// Cambio pagina programmato (frecce, tastiera)
 function go(dir) {
-  if (turning || state.overlay) return;
+  if (turning) return;
   const pgs = pages();
   const target = dir === 'next' ? state.idx + 1 : state.idx - 1;
   if (target < 0 || target >= pgs.length) return;
@@ -384,11 +367,11 @@ function go(dir) {
   tween(0, 1, 460, () => endTurn(true));
 }
 
-/* ---------- Gestione del trascinamento ---------- */
+/* ---------- Trascinamento ---------- */
 let drag = null;
 el.stack.addEventListener('pointerdown', e => {
-  if (turning || state.overlay) return;
-  if (e.target.closest('.nav, .langWrap, a, abbr')) return;
+  if (turning) return;
+  if (e.target.closest('.langWrap, a, abbr')) return;
   drag = { x0:e.clientX, y0:e.clientY, w:el.stack.clientWidth || 1, active:false, p:0, dir:null, id:e.pointerId };
 });
 window.addEventListener('pointermove', e => {
@@ -398,7 +381,7 @@ window.addEventListener('pointermove', e => {
     if (Math.abs(dy) > 14 && Math.abs(dy) >= Math.abs(dx)) { drag = null; return; }  // scroll verticale
     if (Math.abs(dx) < 12) return;
     const dir = dx < 0 ? 'next' : 'prev';
-    if (reduced) { drag.active = true; drag.dir = dir; }        // niente animazione, solo soglia
+    if (reduced) { drag.active = true; drag.dir = dir; }
     else if (prepareTurn(dir)) { drag.active = true; drag.dir = dir; try { el.stack.setPointerCapture(drag.id); } catch (_) {} }
     else { drag = null; return; }
   }
@@ -418,39 +401,11 @@ function releaseDrag() {
 window.addEventListener('pointerup', releaseDrag);
 window.addEventListener('pointercancel', releaseDrag);
 
-/* ---------- Frecce, tastiera ---------- */
-el.prev.addEventListener('click', () => go('prev'));
-el.next.addEventListener('click', () => go('next'));
+/* ---------- Tastiera ---------- */
 document.addEventListener('keydown', e => {
-  if (state.overlay) { if (e.key === 'Escape') toggleIndex(false); return; }
   if (e.key === 'ArrowLeft') go('prev');
   else if (e.key === 'ArrowRight') go('next');
 });
-
-/* ---------- Indice ---------- */
-el.mid.addEventListener('click', () => toggleIndex(!state.overlay));
-function toggleIndex(open) {
-  state.overlay = open;
-  if (!open) { el.index.hidden = true; return; }
-  const pgs = pages();
-  el.index.replaceChildren();
-  el.index.setAttribute('aria-label', t(state.lang, 'index'));
-  el.index.appendChild(h('h2', 'htag', t(state.lang, 'index')));
-  const list = h('div', 'list');
-  pgs.forEach((p, i) => {
-    const b = h('button', 'entry'); b.type = 'button';
-    b.appendChild(h('span', null, pageTitle(p)));
-    b.appendChild(h('span', null, '→'));
-    b.addEventListener('click', () => { toggleIndex(false); state.idx = i; renderBase(true); });
-    list.appendChild(b);
-  });
-  el.index.appendChild(list);
-  const close = h('button', 'close', t(state.lang, 'closeIndex')); close.type = 'button';
-  close.addEventListener('click', () => toggleIndex(false));
-  el.index.appendChild(close);
-  el.index.hidden = false;
-  el.index.scrollTop = 0;
-}
 
 /* ---------- Selettore lingua ---------- */
 function buildLangMenu() {
@@ -475,7 +430,7 @@ function setLang(code) {
   if (code === state.lang) return;
   state.lang = code;
   try { localStorage.setItem('spietato-lang', code); } catch (_) {}
-  if (state.overlay) toggleIndex(true);   // ricostruisce l'indice tradotto
+  prewarm();
   renderBase(false);
 }
 
@@ -486,13 +441,14 @@ async function load() {
     try { cache = JSON.parse(localStorage.getItem(MENU_KEY)); } catch (_) {}
     state.data = cache || DEFAULT_MENU;
     renderBase(false);
+    prewarm();
   }
   try {
     const remote = await supa.fetchMenu();
     if (remote) {
       localStorage.setItem(MENU_KEY, JSON.stringify(remote));
       state.data = remote;
-      if (!turning && !drag) { renderBase(false); if (state.overlay) toggleIndex(true); }
+      if (!turning && !drag) { renderBase(false); prewarm(); }
     }
   } catch (_) { /* offline: resta la copia locale */ }
 }
