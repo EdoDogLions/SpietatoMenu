@@ -4,10 +4,11 @@ Menù sfogliabile per i clienti (via QR code sul tavolo) + area gestori con logi
 con salvataggio condiviso su **Supabase**. Nessun framework, nessun build: sono
 pagine statiche che funzionano su qualunque hosting.
 
-- **Menù cliente** → [`index.html`](index.html): libretto con effetto voltapagina,
+- **Menù cliente** → [`index.html`](index.html): libretto con **sfogliamento che
+  segue il dito** (trascini la pagina e si gira; frecce e indice come alternativa),
   sette categorie (antipasti, primi, secondi, contorni, dolci, bevande, amari),
-  coperto, allergeni, piatto del giorno e pagina informazioni. Frecce, swipe,
-  indice, compatibile con VoiceOver.
+  coperto, allergeni, piatto del giorno e pagina informazioni. **Multilingua**
+  (IT/EN/ES/DE/FR) con selettore in alto a destra. Compatibile con VoiceOver.
 - **Area gestori** → [`admin.html`](admin.html): login email/password, modifica di
   piatti, prezzi, descrizioni, allergeni, riordino, "esaurito" (nascondi), piatto
   del giorno, coperto e dati del locale. Le modifiche vanno online e le vedono tutti.
@@ -87,6 +88,11 @@ di stampa nella [Guida Configurazione](Guida%20Configurazione.dc.html).
 - L'area gestori salva in modo *ottimistico*: prima in locale, poi su Supabase.
   Scrittura possibile solo dopo login (token in `sessionStorage`).
 - Nessun SDK: chiamate REST dirette a Supabase in [`supa.js`](supa.js).
+- **Traduzioni**: le voci fisse (categorie, etichette, allergeni) sono tradotte a
+  mano in [`i18n.js`](i18n.js); nomi e descrizioni dei piatti sono tradotti
+  automaticamente al volo (servizio gratuito MyMemory) e messi in cache nel
+  browser, così ogni frase si traduce una sola volta. Se il servizio non risponde,
+  si resta all'italiano. Nessuna chiave né configurazione richiesta.
 
 ## File
 
@@ -94,11 +100,12 @@ di stampa nella [Guida Configurazione](Guida%20Configurazione.dc.html).
 
 | File | Ruolo |
 |---|---|
-| `index.html` | Menù cliente |
+| `index.html` | Menù cliente (autonomo, JavaScript vanilla) |
 | `admin.html` | Area gestori (login + modifica) |
 | `supa.js` | Client Supabase — URL e *publishable key* già inseriti |
 | `menu-data.js` | Menù predefinito + codici allergeni (fallback) |
-| `support.js` | Runtime che disegna le pagine |
+| `i18n.js` | Traduzioni multilingua + traduzione automatica con cache |
+| `support.js` | Runtime che disegna l'area gestori |
 | `logo.png` | Logo dell'osteria |
 
 **Documentazione / riferimento** (non necessari al sito):

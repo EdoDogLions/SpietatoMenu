@@ -1,199 +1,485 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
-</head>
-<body>
-<x-dc>
-<helmet>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Osteria Lo Spietato — Menù</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
-html,body{margin:0;padding:0;background:#A87A2F;}
-a{color:#8a5f1e;} a:hover{color:#5f3f0f;}
-button{font-family:inherit;}
-@keyframes flipNext{from{transform:perspective(1600px) rotateY(0deg);}to{transform:perspective(1600px) rotateY(-104deg);opacity:.15;}}
-@keyframes flipPrev{from{transform:perspective(1600px) rotateY(-104deg);opacity:.15;}to{transform:perspective(1600px) rotateY(0deg);opacity:1;}}
-@keyframes pageIn{from{opacity:0;}to{opacity:1;}}
+  :root{
+    --ottone:#A87A2F; --ink:#1a1712; --carta:#f5f0e6; --carta2:#f0e9db;
+    --sec:#4a4438; --hair:#9a8f7c; --err:#9c2b1a; --link:#8a5f1e;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--ottone);}
+  body{font-family:'Space Mono',monospace;color:var(--ink);-webkit-tap-highlight-color:transparent;}
+  a{color:var(--link);} a:hover{color:#5f3f0f;}
+  button{font-family:inherit;}
+
+  .stage{min-height:100dvh;background:var(--ottone);display:flex;flex-direction:column;align-items:center;padding:12px 12px 8px;}
+  .book{width:min(430px,100%);flex:1;min-height:0;display:flex;flex-direction:column;position:relative;background:var(--carta);border-radius:4px;box-shadow:0 10px 30px rgba(35,24,8,.35);overflow:hidden;perspective:1600px;}
+  .stack{position:relative;flex:1;min-height:0;}
+
+  .sheet{position:absolute;inset:0;background:var(--carta);padding:26px 26px 18px 34px;overflow:hidden;}
+  .content{overflow-y:auto;overflow-x:hidden;touch-action:pan-y;z-index:1;}
+  .under{z-index:2;}
+  .flip{z-index:4;transform-origin:left center;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:6px 0 18px rgba(35,24,8,.25);will-change:transform;}
+  .flip .shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(35,24,8,0) 40%,rgba(35,24,8,.24));pointer-events:none;opacity:0;}
+  .fold{position:absolute;inset:0 auto 0 0;width:14px;background:linear-gradient(90deg,rgba(35,24,8,.18),rgba(35,24,8,0));pointer-events:none;z-index:5;}
+  [hidden]{display:none !important;}
+
+  .enter{animation:pageIn .32s ease both;}
+  @keyframes pageIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+
+  /* Selettore lingua */
+  .langWrap{position:absolute;top:10px;right:10px;z-index:3;}
+  .langBtn{display:inline-flex;align-items:center;gap:6px;min-height:34px;background:var(--carta2);border:1.5px solid var(--ink);color:var(--ink);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;cursor:pointer;}
+  .langBtn .car{font-size:9px;transition:transform .2s ease;}
+  .langBtn[aria-expanded="true"] .car{transform:rotate(180deg);}
+  .langMenu{position:absolute;top:calc(100% + 6px);right:0;min-width:158px;background:var(--carta);border:1.5px solid var(--ink);box-shadow:0 10px 24px rgba(35,24,8,.28);display:flex;flex-direction:column;}
+  .langMenu button{min-height:44px;background:none;border:0;border-bottom:1px solid var(--hair);color:var(--ink);font-size:13px;text-align:left;padding:8px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .langMenu button:last-child{border-bottom:0;}
+  .langMenu button[aria-current="true"]{background:var(--ink);color:var(--carta);}
+  .langMenu button .code{font-size:10px;opacity:.7;letter-spacing:.1em;}
+
+  /* Copertina */
+  .cover{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 0;}
+  .cover img{width:220px;max-width:80%;display:block;margin:0 auto;box-shadow:0 6px 18px rgba(35,24,8,.25);}
+  .cover .word{margin:16px 0 0;font-size:13px;letter-spacing:.35em;text-transform:uppercase;}
+  .cover .coperto{margin:22px 0 0;font-size:13px;border:1.5px solid var(--ink);padding:5px 14px;}
+  .special{margin-top:26px;background:var(--ottone);color:#fff;padding:12px 16px;max-width:280px;box-shadow:0 6px 16px rgba(35,24,8,.22);}
+  .special .lab{margin:0;font-size:10px;letter-spacing:.25em;text-transform:uppercase;}
+  .special .nm{margin:6px 0 0;font-size:14px;font-weight:700;}
+  .cover .hint{margin:30px 0 0;font-size:12px;color:var(--sec);line-height:1.5;max-width:280px;}
+  .cover .hint .swipe{display:inline-block;animation:nudge 1.8s ease-in-out infinite;}
+  @keyframes nudge{0%,100%{transform:translateX(0);}50%{transform:translateX(5px);}}
+
+  /* Titolo pagina */
+  .htag{display:inline-block;margin:0 0 6px;background:var(--ink);color:var(--carta);font-size:15px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;}
+
+  /* Voci */
+  .items{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:18px;}
+  .item .line{display:flex;align-items:baseline;gap:8px;}
+  .item .nm{font-weight:700;font-size:13.5px;text-transform:uppercase;letter-spacing:.02em;}
+  .item .leader{flex:1;border-bottom:2px dotted var(--hair);min-width:16px;align-self:flex-end;transform:translateY(-3px);}
+  .item .price{font-weight:700;font-size:13.5px;white-space:nowrap;}
+  .item .desc{margin:4px 0 0;font-size:12px;line-height:1.5;color:var(--sec);}
+  .tags{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;align-items:center;}
+  .badge{background:var(--ottone);color:#fff;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:2px 7px;}
+  .allerg{border:1px solid var(--hair);color:var(--sec);font-size:9px;padding:1px 5px;text-decoration:none;cursor:help;}
+
+  /* Informazioni */
+  .info{margin-top:16px;font-size:13px;line-height:1.7;display:flex;flex-direction:column;gap:14px;}
+  .info p{margin:0;}
+  .legend ul{list-style:none;margin:6px 0 0;padding:0;font-size:12px;color:var(--sec);display:flex;flex-direction:column;gap:4px;}
+  .legend .code{border:1px solid var(--hair);font-size:9px;padding:1px 5px;margin-right:6px;}
+
+  /* Indice */
+  .index{z-index:6;overflow-y:auto;}
+  .index .list{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+  .index .entry{min-height:48px;text-align:left;background:none;border:1.5px solid var(--ink);color:var(--ink);font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;transition:background .12s,color .12s;}
+  .index .entry:hover,.index .entry:focus-visible{background:var(--ink);color:var(--carta);outline:none;}
+  .index .close{margin-top:18px;min-height:44px;width:100%;background:var(--ottone);border:0;color:#fff;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:10px 18px;cursor:pointer;}
+
+  /* Barra di navigazione */
+  .nav{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1.5px solid var(--ink);background:var(--carta2);position:relative;z-index:7;}
+  .nav .arrow{min-width:48px;min-height:48px;background:var(--ink);color:var(--carta);border:0;font-size:20px;cursor:pointer;transition:opacity .15s;}
+  .nav .arrow:active{transform:translateY(1px);}
+  .nav .arrow:disabled{opacity:.32;cursor:default;}
+  .nav .mid{flex:1;min-height:48px;background:none;border:1.5px solid var(--ink);color:var(--ink);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .admin-link{margin:10px 0 2px;font-size:11px;color:#fdf6e8;}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+
+  @media (prefers-reduced-motion: reduce){
+    .enter{animation:none;}
+    .cover .hint .swipe{animation:none;}
+  }
 </style>
-</helmet>
-<div style="min-height:100dvh;background:#A87A2F;display:flex;flex-direction:column;align-items:center;font-family:'Space Mono',monospace;color:#1a1712;padding:12px 12px 8px;box-sizing:border-box;">
-  <div style="width:min(430px,100%);flex:1;display:flex;flex-direction:column;position:relative;background:#f5f0e6;border-radius:4px;box-shadow:0 10px 30px rgba(35,24,8,.35);overflow:hidden;">
-    <div style="position:absolute;inset:0 auto 0 0;width:14px;background:linear-gradient(90deg,rgba(35,24,8,.18),rgba(35,24,8,0));pointer-events:none;z-index:2;"></div>
-    <div role="region" aria-live="polite" aria-label="{{ pageAria }}" onTouchStart="{{ onTouchStart }}" onTouchEnd="{{ onTouchEnd }}" style="flex:1;overflow-y:auto;padding:26px 26px 18px 34px;animation:pageIn .3s ease;">
-      <sc-if value="{{ isCover }}" hint-placeholder-val="{{ true }}">
-        <div style="min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:0;padding:32px 0;">
-          <h1 style="margin:0;width:100%;display:flex;justify-content:center;">
-            <img src="logo.png" alt="Osteria Lo Spietato" style="width:220px;max-width:80%;display:block;margin:0 auto;box-shadow:0 6px 18px rgba(35,24,8,.25);">
-          </h1>
-          <p style="margin:14px 0 0;font-size:13px;letter-spacing:.35em;text-transform:uppercase;">menù</p>
-          <p style="margin:22px 0 0;font-size:13px;border:1.5px solid #1a1712;padding:5px 14px;">Coperto {{ copertoFmt }}</p>
-          <sc-if value="{{ hasSpecial }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:26px;background:#A87A2F;color:#fff;padding:12px 16px;max-width:280px;">
-              <p style="margin:0;font-size:10px;letter-spacing:.25em;text-transform:uppercase;">Piatto del giorno</p>
-              <p style="margin:6px 0 0;font-size:14px;font-weight:700;">{{ specialName }}</p>
-            </div>
-          </sc-if>
-          <p style="margin:30px 0 0;font-size:12px;color:#4a4438;">Sfoglia il menù con le frecce qui sotto →</p>
-        </div>
-      </sc-if>
-      <sc-if value="{{ isCategory }}" hint-placeholder-val="{{ false }}">
-        <h2 style="display:inline-block;margin:0 0 6px;background:#1a1712;color:#f5f0e6;font-size:15px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;">{{ pageTitle }}</h2>
-        <ul style="list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:18px;">
-          <sc-for list="{{ pageItems }}" as="v" hint-placeholder-count="4">
-            <li>
-              <div style="display:flex;align-items:baseline;gap:8px;">
-                <span style="font-weight:700;font-size:13.5px;text-transform:uppercase;letter-spacing:.02em;">{{ v.nome }}</span>
-                <span style="flex:1;border-bottom:2px dotted #9a8f7c;min-width:16px;"></span>
-                <span style="font-weight:700;font-size:13.5px;white-space:nowrap;" aria-label="{{ v.prezzoAria }}">{{ v.prezzoFmt }}</span>
-              </div>
-              <sc-if value="{{ v.desc }}" hint-placeholder-val="{{ false }}">
-                <p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:#4a4438;">{{ v.desc }}</p>
-              </sc-if>
-              <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;align-items:center;">
-                <sc-if value="{{ v.delGiorno }}" hint-placeholder-val="{{ false }}">
-                  <span style="background:#A87A2F;color:#fff;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:2px 7px;">Piatto del giorno</span>
-                </sc-if>
-                <sc-for list="{{ v.allergenList }}" as="al" hint-placeholder-count="0">
-                  <abbr title="{{ al.label }}" aria-label="Contiene {{ al.label }}" style="border:1px solid #9a8f7c;color:#4a4438;font-size:9px;padding:1px 5px;text-decoration:none;">{{ al.code }}</abbr>
-                </sc-for>
-              </div>
-            </li>
-          </sc-for>
-        </ul>
-      </sc-if>
-      <sc-if value="{{ isInfo }}" hint-placeholder-val="{{ false }}">
-        <h2 style="display:inline-block;margin:0 0 6px;background:#1a1712;color:#f5f0e6;font-size:15px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;">Informazioni</h2>
-        <div style="margin-top:16px;font-size:13px;line-height:1.7;display:flex;flex-direction:column;gap:14px;">
-          <p style="margin:0;"><strong>Osteria Lo Spietato</strong><br>{{ infoIndirizzo }}</p>
-          <p style="margin:0;">Telefono: <a href="{{ telHref }}">{{ infoTelefono }}</a></p>
-          <div><strong>Orari</strong><br><span style="white-space:pre-line;">{{ infoOrari }}</span></div>
-          <p style="margin:0;">Coperto: <strong>{{ copertoFmt }}</strong></p>
-          <div>
-            <strong>Legenda allergeni</strong>
-            <ul style="list-style:none;margin:6px 0 0;padding:0;font-size:12px;color:#4a4438;">
-              <sc-for list="{{ legend }}" as="al" hint-placeholder-count="4">
-                <li><span style="border:1px solid #9a8f7c;font-size:9px;padding:1px 5px;margin-right:6px;">{{ al.code }}</span>{{ al.label }}</li>
-              </sc-for>
-            </ul>
-          </div>
-        </div>
-      </sc-if>
-    </div>
-    <sc-if value="{{ flipNextOn }}" hint-placeholder-val="{{ false }}">
-      <div aria-hidden="true" onAnimationEnd="{{ endFlip }}" style="position:absolute;inset:0;background:#f0e9db;z-index:5;transform-origin:left center;animation:flipNext .45s ease-in forwards;box-shadow:6px 0 18px rgba(35,24,8,.25);display:flex;align-items:center;justify-content:center;"><span style="font-family:'Archivo Black',sans-serif;font-size:22px;color:#d8cfba;">LO SP!ETATO</span></div>
-    </sc-if>
-    <sc-if value="{{ flipPrevOn }}" hint-placeholder-val="{{ false }}">
-      <div aria-hidden="true" onAnimationEnd="{{ endFlip }}" style="position:absolute;inset:0;background:#f0e9db;z-index:5;transform-origin:left center;animation:flipPrev .45s ease-out forwards;box-shadow:6px 0 18px rgba(35,24,8,.25);display:flex;align-items:center;justify-content:center;"><span style="font-family:'Archivo Black',sans-serif;font-size:22px;color:#d8cfba;">LO SP!ETATO</span></div>
-    </sc-if>
-    <sc-if value="{{ showIndex }}" hint-placeholder-val="{{ false }}">
-      <div role="dialog" aria-label="Indice del menù" style="position:absolute;inset:0;background:#f5f0e6;z-index:6;padding:26px 26px 18px 34px;overflow-y:auto;">
-        <h2 style="display:inline-block;margin:0;background:#1a1712;color:#f5f0e6;font-size:15px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;">Indice</h2>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px;">
-          <sc-for list="{{ indexEntries }}" as="e" hint-placeholder-count="8">
-            <button onClick="{{ e.onGo }}" style="min-height:48px;text-align:left;background:none;border:1.5px solid #1a1712;color:#1a1712;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" style-hover="background:#1a1712;color:#f5f0e6;"><span>{{ e.title }}</span><span aria-hidden="true">→</span></button>
-          </sc-for>
-        </div>
-        <button onClick="{{ closeIndex }}" style="margin-top:18px;min-height:44px;background:#A87A2F;border:none;color:#fff;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:10px 18px;cursor:pointer;">Chiudi indice</button>
+</head>
+<body>
+<div class="stage">
+  <div class="book" id="book">
+    <div class="stack" id="stack">
+      <div class="sheet content enter" id="content" role="region" aria-live="polite" aria-label=""></div>
+      <div class="sheet under" id="under" hidden aria-hidden="true"></div>
+      <div class="sheet flip" id="flip" hidden aria-hidden="true"><div id="flipbody"></div><div class="shade" id="shade"></div></div>
+      <div class="fold"></div>
+      <div class="langWrap" id="langWrap">
+        <button class="langBtn" id="langBtn" aria-haspopup="listbox" aria-expanded="false">
+          <span aria-hidden="true">🌐</span><span id="langCode">IT</span><span class="car" aria-hidden="true">▾</span>
+        </button>
+        <div class="langMenu" id="langMenu" role="listbox" hidden></div>
       </div>
-    </sc-if>
-    <nav aria-label="Navigazione del menù" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1.5px solid #1a1712;background:#f0e9db;position:relative;z-index:7;">
-      <button onClick="{{ goPrev }}" disabled="{{ prevDisabled }}" aria-label="Pagina precedente" style="min-width:48px;min-height:48px;background:#1a1712;color:#f5f0e6;border:none;font-size:20px;cursor:pointer;">‹</button>
-      <button onClick="{{ toggleIndex }}" style="flex:1;min-height:48px;background:none;border:1.5px solid #1a1712;color:#1a1712;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">{{ navLabel }}</button>
-      <button onClick="{{ goNext }}" disabled="{{ nextDisabled }}" aria-label="Pagina successiva" style="min-width:48px;min-height:48px;background:#1a1712;color:#f5f0e6;border:none;font-size:20px;cursor:pointer;">›</button>
+      <div class="sheet index" id="index" hidden role="dialog" aria-modal="true" aria-label=""></div>
+    </div>
+    <nav class="nav" id="navbar" aria-label="">
+      <button class="arrow" id="prev" type="button">‹</button>
+      <button class="mid" id="mid" type="button"></button>
+      <button class="arrow" id="next" type="button">›</button>
     </nav>
   </div>
-  <p style="margin:10px 0 2px;font-size:11px;"><a href="admin.html" style="color:#fdf6e8;">Area gestori</a></p>
+  <a class="admin-link" id="adminLink" href="admin.html">Area gestori</a>
 </div>
-</x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 430, &quot;height&quot;: 900}, &quot;animazioneFlip&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Comportamento&quot;}, &quot;mostraAllergeni&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Comportamento&quot;}}">
-class Component extends DCLogic {
-  state = { idx: 0, flip: null, showIndex: false, data: null, legend: {} };
-  componentDidMount() {
-    this.load();
-    window.addEventListener('storage', this.load);
-    window.addEventListener('focus', this.load);
-    this.poll = setInterval(this.load, 60000);
-    this.reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }
-  componentWillUnmount() {
-    window.removeEventListener('storage', this.load);
-    window.removeEventListener('focus', this.load);
-    clearInterval(this.poll);
-  }
-  load = async () => {
-    const m = await import('./menu-data.js');
-    if (!this.state.data) {
-      let cache = null;
-      try { cache = JSON.parse(localStorage.getItem(m.MENU_KEY)); } catch (e) {}
-      this.setState({ data: cache || m.DEFAULT_MENU, legend: m.ALLERGENI });
+
+<script type="module">
+import { DEFAULT_MENU, ALLERGENI, MENU_KEY } from './menu-data.js';
+import * as supa from './supa.js';
+import { LANGS, UI, t, catName, allergName, translate, translateLines } from './i18n.js';
+
+const $ = id => document.getElementById(id);
+const el = { content:$('content'), under:$('under'), flip:$('flip'), flipbody:$('flipbody'), shade:$('shade'),
+  index:$('index'), stack:$('stack'), prev:$('prev'), next:$('next'), mid:$('mid'), navbar:$('navbar'),
+  langWrap:$('langWrap'), langBtn:$('langBtn'), langMenu:$('langMenu'), langCode:$('langCode'), adminLink:$('adminLink') };
+
+const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+const state = {
+  idx: 0,
+  data: null,
+  lang: (localStorage.getItem('spietato-lang') || 'it'),
+  token: 0,          // invalida le traduzioni asincrone dopo un nuovo render
+  overlay: false     // true quando l'indice è aperto
+};
+if (!LANGS.some(l => l.code === state.lang)) state.lang = 'it';
+
+/* ---------- Modello delle pagine ---------- */
+function pages() {
+  const d = state.data;
+  if (!d) return [{ type:'cover' }];
+  const cats = d.categorie
+    .map(c => ({ type:'cat', cat:c, voci:c.voci.filter(v => !v.nascosto) }))
+    .filter(c => c.voci.length);
+  return [{ type:'cover' }, ...cats, { type:'info' }];
+}
+function pageTitle(p) {
+  if (!p || p.type === 'cover') return t(state.lang, 'cover');
+  if (p.type === 'info') return t(state.lang, 'info');
+  return catName(p.cat.id, p.cat.nome, state.lang);
+}
+function special() {
+  const d = state.data;
+  return d ? d.categorie.flatMap(c => c.voci).find(v => v.delGiorno && !v.nascosto) : null;
+}
+
+/* ---------- Formattazione prezzi ---------- */
+function fmt(n) {
+  const v = Number(n) || 0;
+  const sep = state.lang === 'en' ? '.' : ',';
+  return v % 1 ? '€ ' + v.toFixed(2).replace('.', sep) : '€ ' + v;
+}
+function priceAria(n) {
+  const v = Number(n) || 0;
+  return (state.lang === 'en' ? v.toString() : v.toString().replace('.', ',')) + ' ' + t(state.lang, 'euro');
+}
+
+/* ---------- Traduzione progressiva ---------- */
+// Imposta il testo italiano subito, poi lo sostituisce quando arriva la traduzione.
+function mt(node, italian, token) {
+  node.textContent = italian || '';
+  if (state.lang === 'it' || !italian) return;
+  translate(italian, state.lang).then(tx => {
+    if (node.isConnected && token === state.token) node.textContent = tx;
+  });
+}
+function mtLines(node, italian, token) {
+  node.textContent = italian || '';
+  if (state.lang === 'it' || !italian) return;
+  translateLines(italian, state.lang).then(tx => {
+    if (node.isConnected && token === state.token) node.textContent = tx;
+  });
+}
+
+/* ---------- Costruzione DOM di una pagina ---------- */
+function h(tag, cls, txt) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (txt != null) n.textContent = txt;
+  return n;
+}
+
+function buildPage(i, token) {
+  const pgs = pages();
+  const p = pgs[clamp(i, 0, pgs.length - 1)];
+  const frag = document.createDocumentFragment();
+  const lang = state.lang;
+
+  if (p.type === 'cover') {
+    const c = h('div', 'cover');
+    const img = h('img'); img.src = 'logo.png'; img.alt = 'Osteria Lo Spietato';
+    c.appendChild(img);
+    c.appendChild(h('p', 'word', t(lang, 'menu')));
+    if (state.data) c.appendChild(h('p', 'coperto', t(lang, 'coperto') + ' ' + fmt(state.data.coperto)));
+    const sp = special();
+    if (sp) {
+      const box = h('div', 'special');
+      box.appendChild(h('p', 'lab', t(lang, 'pdg')));
+      const nm = h('p', 'nm'); mt(nm, sp.nome, token); box.appendChild(nm);
+      c.appendChild(box);
     }
-    try {
-      const supa = await import('./supa.js');
-      const remote = await supa.fetchMenu();
-      if (remote) {
-        localStorage.setItem(m.MENU_KEY, JSON.stringify(remote));
-        this.setState({ data: remote, legend: m.ALLERGENI });
+    const hint = h('p', 'hint');
+    hint.appendChild(document.createTextNode(t(lang, 'browse') + ' '));
+    hint.appendChild(h('span', 'swipe', '→'));
+    c.appendChild(hint);
+    frag.appendChild(c);
+
+  } else if (p.type === 'cat') {
+    frag.appendChild(h('h2', 'htag', catName(p.cat.id, p.cat.nome, lang)));
+    const ul = h('ul', 'items');
+    for (const v of p.voci) {
+      const li = h('li', 'item');
+      const line = h('div', 'line');
+      const nm = h('span', 'nm'); mt(nm, v.nome, token);
+      const price = h('span', 'price', fmt(v.prezzo));
+      price.setAttribute('aria-label', priceAria(v.prezzo));
+      line.appendChild(nm);
+      line.appendChild(h('span', 'leader'));
+      line.appendChild(price);
+      li.appendChild(line);
+      if (v.desc) { const d = h('p', 'desc'); mt(d, v.desc, token); li.appendChild(d); }
+      const tags = h('div', 'tags');
+      if (v.delGiorno) tags.appendChild(h('span', 'badge', t(lang, 'pdg')));
+      for (const code of (v.allergeni || [])) {
+        const ab = document.createElement('abbr');
+        ab.className = 'allerg'; ab.textContent = code;
+        const full = allergName(code, lang);
+        ab.title = t(lang, 'contains') + ' ' + full;
+        ab.setAttribute('aria-label', t(lang, 'contains') + ' ' + full);
+        tags.appendChild(ab);
       }
-    } catch (e) { /* offline: resta la copia locale */ }
-  };
-  fmt(n) { const v = Number(n) || 0; return v % 1 ? '€ ' + v.toFixed(2).replace('.', ',') : '€ ' + v; }
-  pages() {
-    const d = this.state.data;
-    if (!d) return [{ tipo: 'cover', title: 'Copertina' }];
-    const cats = d.categorie.map(c => ({ tipo: 'cat', title: c.nome, voci: c.voci.filter(v => !v.nascosto) })).filter(c => c.voci.length);
-    return [{ tipo: 'cover', title: 'Copertina' }, ...cats, { tipo: 'info', title: 'Informazioni' }];
+      if (tags.childNodes.length) li.appendChild(tags);
+      ul.appendChild(li);
+    }
+    frag.appendChild(ul);
+
+  } else { // info
+    const d = state.data;
+    frag.appendChild(h('h2', 'htag', t(lang, 'info')));
+    const box = h('div', 'info');
+    const p1 = h('p'); p1.appendChild(h('strong', null, 'Osteria Lo Spietato'));
+    p1.appendChild(document.createElement('br')); p1.appendChild(document.createTextNode(d.info.indirizzo));
+    box.appendChild(p1);
+    const p2 = h('p'); p2.appendChild(document.createTextNode(t(lang, 'phone') + ': '));
+    const a = document.createElement('a'); a.href = 'tel:' + (d.info.telefono || '').replace(/\s/g, ''); a.textContent = d.info.telefono;
+    p2.appendChild(a); box.appendChild(p2);
+    const hrs = h('div'); hrs.appendChild(h('strong', null, t(lang, 'hours'))); hrs.appendChild(document.createElement('br'));
+    const hv = h('span'); hv.style.whiteSpace = 'pre-line'; mtLines(hv, d.info.orari, token); hrs.appendChild(hv);
+    box.appendChild(hrs);
+    const cop = h('p'); cop.appendChild(document.createTextNode(t(lang, 'coperto') + ': ')); cop.appendChild(h('strong', null, fmt(d.coperto)));
+    box.appendChild(cop);
+    const leg = h('div', 'legend'); leg.appendChild(h('strong', null, t(lang, 'legend')));
+    const lu = h('ul');
+    for (const code of Object.keys(ALLERGENI)) {
+      const li = h('li'); li.appendChild(h('span', 'code', code));
+      li.appendChild(document.createTextNode(allergName(code, lang)));
+      lu.appendChild(li);
+    }
+    leg.appendChild(lu); box.appendChild(leg);
+    frag.appendChild(box);
   }
-  goTo(i, dir) {
-    const pages = this.pages();
-    if (i < 0 || i >= pages.length || i === this.state.idx) return;
-    const anim = (this.props.animazioneFlip ?? true) && !this.reduced;
-    this.setState({ idx: i, showIndex: false, flip: anim ? (dir || (i > this.state.idx ? 'next' : 'prev')) : null });
+  return frag;
+}
+
+/* ---------- Render della pagina base ---------- */
+function renderBase(animate) {
+  state.token++;
+  const pgs = pages();
+  state.idx = clamp(state.idx, 0, pgs.length - 1);
+  el.content.replaceChildren(buildPage(state.idx, state.token));
+  el.content.scrollTop = 0;
+  if (animate && !reduced) { el.content.classList.remove('enter'); void el.content.offsetWidth; el.content.classList.add('enter'); }
+  updateChrome();
+}
+function updateChrome() {
+  const pgs = pages();
+  const n = state.idx + 1, m = pgs.length, title = pageTitle(pgs[state.idx]);
+  el.prev.disabled = state.idx === 0;
+  el.next.disabled = state.idx >= m - 1;
+  el.prev.setAttribute('aria-label', t(state.lang, 'prevPage'));
+  el.next.setAttribute('aria-label', t(state.lang, 'nextPage'));
+  el.mid.textContent = title + ' · ' + n + '/' + m;
+  el.content.setAttribute('aria-label', t(state.lang, 'menuWord') + ', ' + t(state.lang, 'pageWord') + ' ' + n + ' ' + t(state.lang, 'ofWord') + ' ' + m + ': ' + title);
+  el.navbar.setAttribute('aria-label', t(state.lang, 'navHint'));
+  el.langCode.textContent = state.lang.toUpperCase();
+  el.adminLink.textContent = t(state.lang, 'admin');
+  document.documentElement.lang = state.lang;
+}
+
+/* ---------- Sfogliamento (segue il dito) ---------- */
+const MAX = 165;           // gradi di rotazione a pagina girata
+let turn = null;           // { dir, target }
+let turning = false;       // animazione di rilascio in corso
+
+function fillSheet(sheet, i) { sheet.replaceChildren(buildPage(i, state.token)); }
+
+function prepareTurn(dir) {
+  const pgs = pages();
+  const target = dir === 'next' ? state.idx + 1 : state.idx - 1;
+  if (target < 0 || target >= pgs.length) return false;
+  turn = { dir, target };
+  if (dir === 'next') { fillSheet(el.under, target); fillSheet(el.flipbody, state.idx); }
+  else                { fillSheet(el.under, state.idx); fillSheet(el.flipbody, target); }
+  el.under.hidden = false;
+  el.flip.hidden = false;
+  setProgress(0);
+  return true;
+}
+function setProgress(p) {
+  p = clamp(p, 0, 1);
+  const angle = turn.dir === 'next' ? -MAX * p : -MAX * (1 - p);
+  el.flip.style.transform = 'rotateY(' + angle + 'deg)';
+  el.shade.style.opacity = (turn.dir === 'next' ? p : (1 - p)) * 0.9;
+}
+function endTurn(commit) {
+  el.flip.hidden = true; el.under.hidden = true;
+  el.flip.style.transform = '';
+  el.flipbody.replaceChildren(); el.under.replaceChildren();
+  if (commit && turn) { state.idx = turn.target; renderBase(true); }
+  turn = null; turning = false;
+}
+function tween(from, to, dur, onDone) {
+  const t0 = performance.now();
+  (function step(now) {
+    const k = clamp((now - t0) / dur, 0, 1);
+    const e = 1 - Math.pow(1 - k, 3);           // easeOutCubic
+    setProgress(from + (to - from) * e);
+    if (k < 1) requestAnimationFrame(step); else onDone();
+  })(t0);
+}
+// Cambio pagina programmato (frecce, tastiera)
+function go(dir) {
+  if (turning || state.overlay) return;
+  const pgs = pages();
+  const target = dir === 'next' ? state.idx + 1 : state.idx - 1;
+  if (target < 0 || target >= pgs.length) return;
+  if (reduced) { state.idx = target; renderBase(true); return; }
+  if (!prepareTurn(dir)) return;
+  turning = true;
+  tween(0, 1, 460, () => endTurn(true));
+}
+
+/* ---------- Gestione del trascinamento ---------- */
+let drag = null;
+el.stack.addEventListener('pointerdown', e => {
+  if (turning || state.overlay) return;
+  if (e.target.closest('.nav, .langWrap, a, abbr')) return;
+  drag = { x0:e.clientX, y0:e.clientY, w:el.stack.clientWidth || 1, active:false, p:0, dir:null, id:e.pointerId };
+});
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+  if (!drag.active) {
+    if (Math.abs(dy) > 14 && Math.abs(dy) >= Math.abs(dx)) { drag = null; return; }  // scroll verticale
+    if (Math.abs(dx) < 12) return;
+    const dir = dx < 0 ? 'next' : 'prev';
+    if (reduced) { drag.active = true; drag.dir = dir; }        // niente animazione, solo soglia
+    else if (prepareTurn(dir)) { drag.active = true; drag.dir = dir; try { el.stack.setPointerCapture(drag.id); } catch (_) {} }
+    else { drag = null; return; }
   }
-  renderVals() {
-    const s = this.state, d = s.data, pages = this.pages();
-    const page = pages[Math.min(s.idx, pages.length - 1)];
-    const showAll = this.props.mostraAllergeni ?? true;
-    const legend = Object.entries(s.legend).map(([code, label]) => ({ code, label }));
-    const special = d ? d.categorie.flatMap(c => c.voci).find(v => v.delGiorno && !v.nascosto) : null;
-    return {
-      isCover: page.tipo === 'cover', isCategory: page.tipo === 'cat', isInfo: page.tipo === 'info',
-      pageTitle: page.title,
-      pageAria: 'Menù, pagina ' + (s.idx + 1) + ' di ' + pages.length + ': ' + page.title,
-      pageItems: (page.voci || []).map(v => ({
-        ...v,
-        prezzoFmt: this.fmt(v.prezzo),
-        prezzoAria: (Number(v.prezzo) || 0).toString().replace('.', ',') + ' euro',
-        allergenList: showAll ? (v.allergeni || []).map(code => ({ code, label: s.legend[code] || code })) : []
-      })),
-      copertoFmt: d ? this.fmt(d.coperto) : '€ 2',
-      hasSpecial: !!special, specialName: special ? special.nome : '',
-      infoIndirizzo: d ? d.info.indirizzo : '', infoTelefono: d ? d.info.telefono : '',
-      telHref: d ? 'tel:' + d.info.telefono.replace(/\s/g, '') : '', infoOrari: d ? d.info.orari : '',
-      legend,
-      flipNextOn: s.flip === 'next', flipPrevOn: s.flip === 'prev',
-      endFlip: () => this.setState({ flip: null }),
-      showIndex: s.showIndex,
-      toggleIndex: () => this.setState({ showIndex: !s.showIndex }),
-      closeIndex: () => this.setState({ showIndex: false }),
-      indexEntries: pages.map((p, i) => ({ title: p.title, onGo: () => this.goTo(i) })),
-      goPrev: () => this.goTo(s.idx - 1, 'prev'),
-      goNext: () => this.goTo(s.idx + 1, 'next'),
-      prevDisabled: s.idx === 0, nextDisabled: s.idx >= pages.length - 1,
-      navLabel: page.title + ' · ' + (s.idx + 1) + '/' + pages.length,
-      onTouchStart: e => { this.tx = e.touches[0].clientX; },
-      onTouchEnd: e => {
-        if (this.tx == null) return;
-        const dx = e.changedTouches[0].clientX - this.tx; this.tx = null;
-        if (dx < -60) this.goTo(s.idx + 1, 'next');
-        else if (dx > 60) this.goTo(s.idx - 1, 'prev');
-      }
-    };
+  if (e.cancelable) e.preventDefault();
+  drag.p = drag.dir === 'next' ? clamp(-dx / drag.w, 0, 1) : clamp(dx / drag.w, 0, 1);
+  if (!reduced) setProgress(drag.p);
+});
+function releaseDrag() {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (!d.active) return;
+  if (reduced) { if (d.p > 0.25) go(d.dir); return; }
+  const commit = d.p > 0.5;
+  turning = true;
+  tween(d.p, commit ? 1 : 0, 260, () => endTurn(commit));
+}
+window.addEventListener('pointerup', releaseDrag);
+window.addEventListener('pointercancel', releaseDrag);
+
+/* ---------- Frecce, tastiera ---------- */
+el.prev.addEventListener('click', () => go('prev'));
+el.next.addEventListener('click', () => go('next'));
+document.addEventListener('keydown', e => {
+  if (state.overlay) { if (e.key === 'Escape') toggleIndex(false); return; }
+  if (e.key === 'ArrowLeft') go('prev');
+  else if (e.key === 'ArrowRight') go('next');
+});
+
+/* ---------- Indice ---------- */
+el.mid.addEventListener('click', () => toggleIndex(!state.overlay));
+function toggleIndex(open) {
+  state.overlay = open;
+  if (!open) { el.index.hidden = true; return; }
+  const pgs = pages();
+  el.index.replaceChildren();
+  el.index.setAttribute('aria-label', t(state.lang, 'index'));
+  el.index.appendChild(h('h2', 'htag', t(state.lang, 'index')));
+  const list = h('div', 'list');
+  pgs.forEach((p, i) => {
+    const b = h('button', 'entry'); b.type = 'button';
+    b.appendChild(h('span', null, pageTitle(p)));
+    b.appendChild(h('span', null, '→'));
+    b.addEventListener('click', () => { toggleIndex(false); state.idx = i; renderBase(true); });
+    list.appendChild(b);
+  });
+  el.index.appendChild(list);
+  const close = h('button', 'close', t(state.lang, 'closeIndex')); close.type = 'button';
+  close.addEventListener('click', () => toggleIndex(false));
+  el.index.appendChild(close);
+  el.index.hidden = false;
+  el.index.scrollTop = 0;
+}
+
+/* ---------- Selettore lingua ---------- */
+function buildLangMenu() {
+  el.langMenu.replaceChildren();
+  for (const l of LANGS) {
+    const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option');
+    b.setAttribute('aria-current', l.code === state.lang ? 'true' : 'false');
+    b.appendChild(h('span', null, l.label));
+    b.appendChild(h('span', 'code', l.code.toUpperCase()));
+    b.addEventListener('click', () => { setLang(l.code); openLang(false); });
+    el.langMenu.appendChild(b);
   }
 }
+function openLang(open) {
+  el.langMenu.hidden = !open;
+  el.langBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (open) buildLangMenu();
+}
+el.langBtn.addEventListener('click', e => { e.stopPropagation(); openLang(el.langMenu.hidden); });
+document.addEventListener('click', e => { if (!el.langWrap.contains(e.target)) openLang(false); });
+function setLang(code) {
+  if (code === state.lang) return;
+  state.lang = code;
+  try { localStorage.setItem('spietato-lang', code); } catch (_) {}
+  if (state.overlay) toggleIndex(true);   // ricostruisce l'indice tradotto
+  renderBase(false);
+}
+
+/* ---------- Dati: caricamento e sincronizzazione ---------- */
+async function load() {
+  if (!state.data) {
+    let cache = null;
+    try { cache = JSON.parse(localStorage.getItem(MENU_KEY)); } catch (_) {}
+    state.data = cache || DEFAULT_MENU;
+    renderBase(false);
+  }
+  try {
+    const remote = await supa.fetchMenu();
+    if (remote) {
+      localStorage.setItem(MENU_KEY, JSON.stringify(remote));
+      state.data = remote;
+      if (!turning && !drag) { renderBase(false); if (state.overlay) toggleIndex(true); }
+    }
+  } catch (_) { /* offline: resta la copia locale */ }
+}
+
+/* ---------- Avvio ---------- */
+buildLangMenu();
+load();
+window.addEventListener('focus', load);
+window.addEventListener('storage', load);
+setInterval(load, 60000);
 </script>
 </body>
 </html>
