@@ -25,9 +25,12 @@
   .book{width:100%;max-width:600px;margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column;position:relative;background:var(--carta);overflow:hidden;perspective:1600px;}
   .stack{position:relative;flex:1;min-height:0;}
 
-  .sheet{position:absolute;inset:0;background:var(--carta);padding:calc(24px + var(--safe-t)) calc(26px + var(--safe-r)) calc(22px + var(--safe-b)) calc(34px + var(--safe-l));overflow:hidden;}
+  .sheet{position:absolute;inset:0;background:var(--carta);padding:calc(24px + var(--safe-t)) calc(26px + var(--safe-r)) calc(22px + var(--safe-b)) calc(34px + var(--safe-l));overflow:hidden;display:flex;flex-direction:column;}
   .content{overflow-y:auto;overflow-x:hidden;touch-action:pan-y;z-index:1;}
   .under{z-index:2;}
+  /* Centratura verticale: al centro se il contenuto è corto, scorre dall'alto se è più lungo */
+  .page{margin:auto 0;width:100%;}
+  #flipbody{flex:1;min-height:0;display:flex;flex-direction:column;}
   .flip{z-index:4;transform-origin:left center;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:6px 0 18px rgba(35,24,8,.25);will-change:transform;}
   .flip .shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(35,24,8,0) 40%,rgba(35,24,8,.24));pointer-events:none;opacity:0;}
   .fold{position:absolute;inset:0 auto 0 0;width:14px;background:linear-gradient(90deg,rgba(35,24,8,.18),rgba(35,24,8,0));pointer-events:none;z-index:5;}
@@ -48,7 +51,7 @@
   .langMenu button .code{font-size:10px;opacity:.7;letter-spacing:.1em;}
 
   /* Copertina */
-  .cover{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 0;}
+  .cover{display:flex;flex-direction:column;align-items:center;text-align:center;padding:12px 0;}
   .cover img{width:230px;max-width:80%;display:block;margin:0 auto;box-shadow:0 6px 18px rgba(35,24,8,.25);}
   .cover .word{margin:16px 0 0;font-size:13px;letter-spacing:.35em;text-transform:uppercase;}
   .cover .coperto{margin:22px 0 0;font-size:13px;border:1.5px solid var(--ink);padding:5px 14px;}
@@ -233,7 +236,7 @@ function buildItem(v, lang, token) {
 function buildPage(i, token) {
   const pgs = pages();
   const p = pgs[clamp(i, 0, pgs.length - 1)];
-  const frag = document.createDocumentFragment();
+  const page = h('div', 'page');
   const lang = state.lang;
 
   if (p.type === 'cover') {
@@ -252,7 +255,7 @@ function buildPage(i, token) {
     hint.appendChild(document.createTextNode(t(lang, 'browse') + ' '));
     hint.appendChild(h('span', 'swipe', '→'));
     c.appendChild(hint);
-    frag.appendChild(c);
+    page.appendChild(c);
 
   } else if (p.type === 'cat') {
     p.members.forEach((m, mi) => {
@@ -261,12 +264,12 @@ function buildPage(i, token) {
       const ul = h('ul', 'items');
       for (const v of m.voci) ul.appendChild(buildItem(v, lang, token));
       sec.appendChild(ul);
-      frag.appendChild(sec);
+      page.appendChild(sec);
     });
 
   } else { // info
     const d = state.data;
-    frag.appendChild(h('h2', 'htag', t(lang, 'info')));
+    page.appendChild(h('h2', 'htag', t(lang, 'info')));
     const box = h('div', 'info');
     const p1 = h('p'); p1.appendChild(h('strong', null, 'Osteria Lo Spietato'));
     p1.appendChild(document.createElement('br')); p1.appendChild(document.createTextNode(d.info.indirizzo));
@@ -289,9 +292,9 @@ function buildPage(i, token) {
     leg.appendChild(lu); box.appendChild(leg);
     const adm = h('a', 'admin-link', t(lang, 'admin')); adm.href = 'admin.html';
     box.appendChild(adm);
-    frag.appendChild(box);
+    page.appendChild(box);
   }
-  return frag;
+  return page;
 }
 
 /* ---------- Render della pagina base ---------- */
