@@ -27,12 +27,15 @@ button,input,textarea{font-family:inherit;}
           <span style="display:block;font-family:'Archivo Black',sans-serif;font-size:26px;">LO SP!ETATO</span>
           <span style="display:block;font-size:11px;letter-spacing:.25em;text-transform:uppercase;margin-top:10px;color:#4a4438;">Area gestori</span>
         </div>
-        <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;">Utente
-          <input type="text" autocomplete="username" value="{{ u }}" onChange="{{ onU }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;">
+        <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;">Email
+          <input type="email" autocomplete="username" value="{{ u }}" onChange="{{ onU }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;">
         </label>
         <label style="font-size:12px;display:flex;flex-direction:column;gap:4px;">Password
           <input type="password" autocomplete="current-password" value="{{ p }}" onChange="{{ onP }}" style="min-height:44px;border:1.5px solid #1a1712;background:#fff;padding:6px 10px;font-size:14px;box-sizing:border-box;">
         </label>
+        <sc-if value="{{ sessionExpired }}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin:0;font-size:12px;color:#9c2b1a;line-height:1.5;">Sessione scaduta: accedi di nuovo. L'ultima modifica non è stata salvata online — dopo l'accesso ripetila.</p>
+        </sc-if>
         <sc-if value="{{ err }}" hint-placeholder-val="{{ false }}">
           <p role="alert" style="margin:0;font-size:12px;color:#9c2b1a;">Credenziali non valide. Riprova.</p>
         </sc-if>
@@ -134,7 +137,7 @@ button,input,textarea{font-family:inherit;}
       <button onClick="{{ onAdd }}" style="margin-top:14px;min-height:48px;width:100%;background:#A87A2F;color:#fff;border:none;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;">+ Aggiungi piatto</button>
       <div style="margin-top:26px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
         <button onClick="{{ onReset }}" style="min-height:44px;background:none;border:1.5px solid #9c2b1a;color:#9c2b1a;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:8px 14px;cursor:pointer;">Ripristina menù predefinito</button>
-        <span style="font-size:11px;color:#4a4438;">Le modifiche sono visibili subito sul menù dei clienti.</span>
+        <span style="font-size:11px;color:#4a4438;">Le modifiche vengono salvate online e viste da tutti i clienti.</span>
       </div>
     </main>
   </sc-if>
@@ -142,18 +145,36 @@ button,input,textarea{font-family:inherit;}
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { authed: false, u: '', p: '', err: false, data: null, cat: 'antipasti', editing: null, draft: null, toast: '' };
+  state = { authed: false, token: '', u: '', p: '', err: false, data: null, cat: 'antipasti', editing: null, draft: null, toast: '' };
   async componentDidMount() {
     this.m = await import('./menu-data.js');
+    this.supa = await import('./supa.js');
     let d = null;
     try { d = JSON.parse(localStorage.getItem(this.m.MENU_KEY)); } catch (e) {}
-    this.setState({ data: d || JSON.parse(JSON.stringify(this.m.DEFAULT_MENU)), authed: sessionStorage.getItem('spietato-admin') === '1' });
+    this.setState({ data: d || JSON.parse(JSON.stringify(this.m.DEFAULT_MENU)), token: sessionStorage.getItem('spietato-token') || '', authed: !!sessionStorage.getItem('spietato-token') });
+    try {
+      const remote = await this.supa.fetchMenu();
+      if (remote) { localStorage.setItem(this.m.MENU_KEY, JSON.stringify(remote)); this.setState({ data: remote }); }
+    } catch (e) {}
   }
-  save(data, msg) {
-    localStorage.setItem(this.m.MENU_KEY, JSON.stringify(data));
+  toast(msg, ms) {
     clearTimeout(this.tt);
-    this.tt = setTimeout(() => this.setState({ toast: '' }), 2200);
-    this.setState({ data, toast: msg || 'Salvato ✓' });
+    this.tt = setTimeout(() => this.setState({ toast: '' }), ms || 2200);
+    this.setState({ toast: msg });
+  }
+  async save(data, msg) {
+    localStorage.setItem(this.m.MENU_KEY, JSON.stringify(data));
+    this.setState({ data });
+    this.toast('Salvataggio…', 8000);
+    try {
+      await this.supa.pushMenu(data, this.state.token);
+      this.toast(msg || 'Salvato online ✓');
+    } catch (e) {
+      if (e.message === 'sessione') {
+        sessionStorage.removeItem('spietato-token');
+        this.setState({ authed: false, token: '', sessionExpired: true, toast: '' });
+      } else this.toast('Salvato solo localmente: connessione assente', 5000);
+    }
   }
   mut(fn, msg) { const d = JSON.parse(JSON.stringify(this.state.data)); fn(d); this.save(d, msg); }
   cat(d) { return (d || this.state.data).categorie.find(c => c.id === this.state.cat); }
@@ -162,15 +183,20 @@ class Component extends DCLogic {
     const s = this.state, d = s.data;
     const vals = {
       authed: s.authed && !!d, notAuthed: !s.authed,
-      u: s.u, p: s.p, err: s.err, toast: s.toast,
+      u: s.u, p: s.p, err: s.err, toast: s.toast, sessionExpired: s.sessionExpired,
       onU: e => this.setState({ u: e.target.value }),
       onP: e => this.setState({ p: e.target.value }),
-      login: e => {
+      login: async e => {
         e.preventDefault();
-        if (s.u.trim() === 'spietato' && s.p === 'nicole123') { sessionStorage.setItem('spietato-admin', '1'); this.setState({ authed: true, err: false, p: '' }); }
-        else this.setState({ err: true });
+        this.setState({ err: false, sessionExpired: false });
+        this.toast('Accesso…', 8000);
+        try {
+          const tok = await this.supa.signIn(s.u.trim(), s.p);
+          sessionStorage.setItem('spietato-token', tok);
+          this.setState({ authed: true, token: tok, err: false, p: '', toast: '' });
+        } catch (err) { this.setState({ err: true, toast: '' }); }
       },
-      logout: () => { sessionStorage.removeItem('spietato-admin'); this.setState({ authed: false, u: '', p: '' }); }
+      logout: () => { sessionStorage.removeItem('spietato-token'); this.setState({ authed: false, token: '', u: '', p: '' }); }
     };
     if (!d) return vals;
     const cat = this.cat();

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+doc-page:not(:defined){visibility:hidden}
+a{color:#8a5f1e;} a:hover{color:#5f3f0f;}
+</style>
+<script src="./doc-page.js"></script>
+</helmet>
+<doc-page margin="0.85in">
+  <div style="font-family:'Space Mono',monospace;color:#1a1712;font-size:15px;line-height:1.65;">
+    <p style="margin:0 0 6px;font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:#8a5f1e;">Osteria Lo Spietato · menù digitale</p>
+    <h1 style="margin:0 0 6px;font-family:'Archivo Black',sans-serif;font-size:31px;line-height:1.15;letter-spacing:.5px;">Guida alla configurazione e alla distribuzione via QR code</h1>
+    <p style="margin:0 0 26px;font-size:13px;color:#4a4438;">Cosa fare, in ordine, per mettere online il menù e portarlo sui tavoli. Servono circa 30 minuti.</p>
+
+    <h2 style="margin:0 0 4px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;border-bottom:2px solid #1a1712;padding-bottom:6px;">1 · Cosa è già pronto</h2>
+    <p style="margin:14px 0 0;">Il sistema è composto da due pagine e da un database.</p>
+    <ul style="margin:10px 0 0;padding-left:22px;">
+      <li style="margin-bottom:6px;"><strong>Menù cliente</strong> (<code>index.html</code>): libretto sfogliabile con antipasti, primi, secondi, contorni, dolci, bevande e amari, coperto in copertina, allergeni, piatto del giorno e pagina informazioni. Navigabile con frecce, swipe e indice, leggibile da VoiceOver.</li>
+      <li style="margin-bottom:6px;"><strong>Area gestori</strong> (<code>admin.html</code>): accesso con email e password, modifica di nome, descrizione, prezzo e allergeni, aggiunta ed eliminazione piatti, riordino, segnalazione degli esauriti, modifica del coperto e dei dati del locale.</li>
+      <li><strong>Database Supabase</strong> (progetto <code>oxredhrvfoyngyauogad</code>): conserva il menù. Le modifiche fatte dall'area gestori arrivano a tutti i telefoni dei clienti.</li>
+    </ul>
+
+    <h2 style="margin:34px 0 4px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;border-bottom:2px solid #1a1712;padding-bottom:6px;">2 · Completare Supabase</h2>
+    <p style="margin:14px 0 0;">Dalla dashboard di <a href="https://supabase.com">supabase.com</a>, nel progetto già creato.</p>
+    <table style="width:100%;border-collapse:collapse;margin:14px 0 0;font-size:13.5px;">
+      <thead>
+        <tr>
+          <th style="text-align:left;border-bottom:1.5px solid #1a1712;padding:6px 8px 6px 0;width:42px;">#</th>
+          <th style="text-align:left;border-bottom:1.5px solid #1a1712;padding:6px 8px 6px 0;">Dove</th>
+          <th style="text-align:left;border-bottom:1.5px solid #1a1712;padding:6px 0;">Cosa fare</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 8px 8px 0;vertical-align:top;font-weight:700;">2.1</td>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 8px 8px 0;vertical-align:top;">SQL Editor</td>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 0;vertical-align:top;">Esegui lo script della tabella <code>menu</code> (riquadro alla pagina seguente). Crea la riga unica che contiene il menù e le regole di accesso.</td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 8px 8px 0;vertical-align:top;font-weight:700;">2.2</td>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 8px 8px 0;vertical-align:top;">Authentication → Users</td>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 0;vertical-align:top;">Verifica che l'utente <code>milena.amadori13@gmail.com</code> esista e risulti confermato. È l'account con cui si entra nell'area gestori.</td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 8px 8px 0;vertical-align:top;font-weight:700;">2.3</td>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 8px 8px 0;vertical-align:top;">Authentication → Providers → Email</td>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 0;vertical-align:top;">Disattiva <em>Allow new users to sign up</em>, così nessun estraneo può registrarsi come gestore.</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 8px 8px 0;vertical-align:top;font-weight:700;">2.4</td>
+          <td style="padding:8px 8px 8px 0;vertical-align:top;">Table Editor → menu</td>
+          <td style="padding:8px 0;vertical-align:top;">Controlla che esista una riga con <code>id = 1</code>. Se manca, riesegui lo script.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin:16px 0 0;background:#f2ead9;border-left:4px solid #A87A2F;padding:12px 14px;break-inside:avoid;orphans:3;widows:3;">Le chiavi <em>Project URL</em> e <em>publishable key</em> sono già inserite nel file <code>supa.js</code>: non serve toccarle. La chiave <code>service_role</code>, invece, non va mai copiata nel sito né inviata a nessuno.</p>
+
+    <div style="break-before:page;"></div>
+    <h2 style="margin:0 0 4px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;border-bottom:2px solid #1a1712;padding-bottom:6px;">Script della tabella</h2>
+    <pre style="margin:14px 0 0;background:#1a1712;color:#f5f0e6;padding:16px 18px;font-size:11.5px;line-height:1.6;overflow-x:auto;break-inside:avoid;">create table menu (
+  id int primary key default 1,
+  data jsonb not null,
+  updated_at timestamptz default now(),
+  constraint solo_una_riga check (id = 1)
+);
+
+alter table menu enable row level security;
+
+create policy "lettura pubblica" on menu
+  for select using (true);
+
+create policy "scrittura gestori" on menu
+  for all to authenticated using (true) with check (true);
+
+insert into menu (id, data) values (1, '{}'::jsonb);</pre>
+    <p style="margin:10px 0 0;font-size:12.5px;color:#4a4438;">Figura 1 — Da incollare in SQL Editor → New query → Run. Lettura aperta a tutti, scrittura solo a chi ha fatto login.</p>
+
+    <h2 style="margin:34px 0 4px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;border-bottom:2px solid #1a1712;padding-bottom:6px;">3 · Pubblicare le pagine</h2>
+    <p style="margin:14px 0 0;">Nel repository GitHub già creato, carica i sei file: <code>index.html</code>, <code>admin.html</code>, <code>support.js</code>, <code>menu-data.js</code>, <code>supa.js</code>, <code>logo.png</code> (Add file → Upload files → Commit changes).</p>
+    <p style="margin:12px 0 0;">Poi apri <strong>Settings → Pages</strong> e imposta Source su branch <code>main</code>, cartella <code>/ (root)</code>. Dopo circa un minuto gli indirizzi sono attivi:</p>
+    <ul style="margin:10px 0 0;padding-left:22px;">
+      <li style="margin-bottom:6px;">Menù per i clienti: <code>https://TUOUTENTE.github.io/NOMEREPO/</code></li>
+      <li>Area gestori: <code>https://TUOUTENTE.github.io/NOMEREPO/admin.html</code></li>
+    </ul>
+    <p style="margin:12px 0 0;">In alternativa, senza GitHub: su <a href="https://app.netlify.com/drop">Netlify Drop</a> trascini la cartella con i sei file e ottieni subito un indirizzo online.</p>
+
+    <h2 style="margin:34px 0 4px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;border-bottom:2px solid #1a1712;padding-bottom:6px;">4 · Primo caricamento del menù</h2>
+    <p style="margin:14px 0 0;">Finché il database è vuoto i clienti vedono il menù di partenza scritto nel codice. Per caricarlo su Supabase: apri l'area gestori, accedi, cambia un valore qualsiasi (per esempio il coperto) e riportalo come prima. Quando compare <em>Salvato online</em> il menù è nel database e da quel momento ogni modifica passa da lì.</p>
+    <p style="margin:12px 0 0;">Ricontrolla anche i piatti: contorni, dolci, bevande e amari sono voci di esempio, da sostituire con quelle reali dell'osteria.</p>
+
+    <h2 style="margin:34px 0 4px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;border-bottom:2px solid #1a1712;padding-bottom:6px;">5 · Distribuire via QR code</h2>
+    <ol style="margin:14px 0 0;padding-left:22px;">
+      <li style="margin-bottom:8px;">Copia l'indirizzo del menù cliente (quello del punto 3, senza <code>admin.html</code>).</li>
+      <li style="margin-bottom:8px;">Genera il codice su un servizio gratuito senza scadenza, per esempio <a href="https://www.qr-code-generator.com">qr-code-generator.com</a> o l'estensione QR di Chrome. Scarica il file in formato <strong>SVG o PNG ad alta risoluzione</strong>: i formati vettoriali restano nitidi in stampa.</li>
+      <li style="margin-bottom:8px;">Evita i QR "dinamici" che richiedono un abbonamento: se l'abbonamento scade il codice sui tavoli smette di funzionare.</li>
+      <li style="margin-bottom:8px;">Stampa il codice ad almeno <strong>3 × 3 cm</strong> (4 × 4 cm se il tavolo è basso), in nero su fondo chiaro, con un margine bianco intorno pari a quattro moduli. Non inserirlo dentro il logo né su fondo scuro.</li>
+      <li style="margin-bottom:8px;">Accompagnalo con una riga di testo, per esempio "Inquadra per il menù", e con l'indirizzo scritto in chiaro sotto: serve a chi ha il telefono scarico o non usa la fotocamera.</li>
+      <li>Applicalo su un supporto stabile: cavalierino da tavolo, adesivo laminato o vetrofania all'ingresso. Tieni due o tre menù cartacei per chi li preferisce.</li>
+    </ol>
+    <p style="margin:16px 0 0;background:#f2ead9;border-left:4px solid #A87A2F;padding:12px 14px;break-inside:avoid;orphans:3;widows:3;">Prima di stampare in serie, prova il codice con un iPhone e un Android, in modalità dati mobili e non in Wi-Fi, e con VoiceOver attivo. Verifica che la copertina, tutte le sette categorie e la pagina informazioni si aprano.</p>
+
+    <h2 style="margin:34px 0 4px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;border-bottom:2px solid #1a1712;padding-bottom:6px;">6 · Uso quotidiano e problemi comuni</h2>
+    <p style="margin:14px 0 0;">Per un piatto esaurito usa <em>Nascondi</em>: resta in elenco per i gestori e spariscono dal menù dei clienti. Il menù cliente si aggiorna all'apertura, al rientro sulla pagina e ogni minuto; chi ha il telefono già aperto vedrà la modifica entro un minuto.</p>
+    <table style="width:100%;border-collapse:collapse;margin:14px 0 0;font-size:13.5px;">
+      <thead>
+        <tr>
+          <th style="text-align:left;border-bottom:1.5px solid #1a1712;padding:6px 8px 6px 0;width:40%;">Sintomo</th>
+          <th style="text-align:left;border-bottom:1.5px solid #1a1712;padding:6px 0;">Causa e rimedio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 8px 8px 0;vertical-align:top;">"Credenziali non valide"</td>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 0;vertical-align:top;">Email o password errate, oppure utente non confermato su Supabase (punto 2.2).</td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 8px 8px 0;vertical-align:top;">"Salvato solo localmente"</td>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 0;vertical-align:top;">Connessione assente o script della tabella non eseguito. Ripeti la modifica quando la rete torna.</td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 8px 8px 0;vertical-align:top;">"Sessione scaduta"</td>
+          <td style="border-bottom:1px solid #d8cfba;padding:8px 0;vertical-align:top;">Normale dopo qualche ora di inattività. Accedi di nuovo e ripeti l'ultima modifica.</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 8px 8px 0;vertical-align:top;">I clienti vedono il menù vecchio</td>
+          <td style="padding:8px 0;vertical-align:top;">Il primo caricamento (punto 4) non è mai stato fatto, oppure la pagina è aperta da prima: basta ricaricarla.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin:26px 0 0;font-size:12.5px;color:#4a4438;">Documento di configurazione — menù digitale Osteria Lo Spietato.</p>
+  </div>
+</doc-page>
+</x-dc>
+</body>
+</html>

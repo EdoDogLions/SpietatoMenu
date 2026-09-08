@@ -116,17 +116,29 @@ class Component extends DCLogic {
     this.load();
     window.addEventListener('storage', this.load);
     window.addEventListener('focus', this.load);
+    this.poll = setInterval(this.load, 60000);
     this.reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
   componentWillUnmount() {
     window.removeEventListener('storage', this.load);
     window.removeEventListener('focus', this.load);
+    clearInterval(this.poll);
   }
   load = async () => {
     const m = await import('./menu-data.js');
-    let d = null;
-    try { d = JSON.parse(localStorage.getItem(m.MENU_KEY)); } catch (e) {}
-    this.setState({ data: d || m.DEFAULT_MENU, legend: m.ALLERGENI });
+    if (!this.state.data) {
+      let cache = null;
+      try { cache = JSON.parse(localStorage.getItem(m.MENU_KEY)); } catch (e) {}
+      this.setState({ data: cache || m.DEFAULT_MENU, legend: m.ALLERGENI });
+    }
+    try {
+      const supa = await import('./supa.js');
+      const remote = await supa.fetchMenu();
+      if (remote) {
+        localStorage.setItem(m.MENU_KEY, JSON.stringify(remote));
+        this.setState({ data: remote, legend: m.ALLERGENI });
+      }
+    } catch (e) { /* offline: resta la copia locale */ }
   };
   fmt(n) { const v = Number(n) || 0; return v % 1 ? '€ ' + v.toFixed(2).replace('.', ',') : '€ ' + v; }
   pages() {
