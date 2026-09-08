@@ -89,10 +89,14 @@ di stampa nella [Guida Configurazione](Guida%20Configurazione.dc.html).
   Scrittura possibile solo dopo login (token in `sessionStorage`).
 - Nessun SDK: chiamate REST dirette a Supabase in [`supa.js`](supa.js).
 - **Traduzioni**: le voci fisse (categorie, etichette, allergeni) sono tradotte a
-  mano in [`i18n.js`](i18n.js); nomi e descrizioni dei piatti sono tradotti
-  automaticamente al volo (servizio gratuito MyMemory) e messi in cache nel
-  browser, così ogni frase si traduce una sola volta. Se il servizio non risponde,
-  si resta all'italiano. Nessuna chiave né configurazione richiesta.
+  mano in [`i18n.js`](i18n.js). Nomi, descrizioni e orari del menù attuale sono
+  **pre-tradotti** in [`translations.js`](translations.js): compaiono subito al
+  primo caricamento in qualsiasi lingua, anche offline, senza chiamate di rete.
+  I piatti aggiunti in futuro dai gestori vengono tradotti automaticamente al volo
+  (servizio gratuito MyMemory) e messi in cache nel browser. Se una traduzione
+  manca e il servizio non risponde, si resta all'italiano. Nessuna chiave richiesta.
+  Per rigenerare i pre-tradotti dopo modifiche importanti al menù:
+  `node tools/pretranslate.mjs > translations.js`.
 
 ## File
 
@@ -105,8 +109,11 @@ di stampa nella [Guida Configurazione](Guida%20Configurazione.dc.html).
 | `supa.js` | Client Supabase — URL e *publishable key* già inseriti |
 | `menu-data.js` | Menù predefinito + codici allergeni (fallback) |
 | `i18n.js` | Traduzioni multilingua + traduzione automatica con cache |
+| `translations.js` | Traduzioni pre-calcolate del menù (istantanee, offline) |
 | `support.js` | Runtime che disegna l'area gestori |
 | `logo.png` | Logo dell'osteria |
+
+Strumenti (non serviti dal sito): `tools/pretranslate.mjs` rigenera `translations.js`.
 
 **Documentazione / riferimento** (non necessari al sito):
 
