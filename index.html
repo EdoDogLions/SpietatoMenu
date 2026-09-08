@@ -58,6 +58,7 @@
 
   /* Titolo pagina */
   .htag{display:inline-block;margin:0 0 6px;background:var(--ink);color:var(--carta);font-size:15px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;}
+  .cat-section.more{margin-top:30px;}
 
   /* Voci */
   .items{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:18px;}
@@ -147,18 +148,36 @@ const state = {
 if (!LANGS.some(l => l.code === state.lang)) state.lang = 'it';
 
 /* ---------- Modello delle pagine ---------- */
+// Categorie che condividono la stessa pagina (nell'ordine indicato).
+const PAGE_GROUPS = [ ['secondi', 'contorni'], ['dolci', 'bevande'] ];
+
 function pages() {
   const d = state.data;
   if (!d) return [{ type:'cover' }];
-  const cats = d.categorie
-    .map(c => ({ type:'cat', cat:c, voci:c.voci.filter(v => !v.nascosto) }))
-    .filter(c => c.voci.length);
-  return [{ type:'cover' }, ...cats, { type:'info' }];
+  const visible = new Map();
+  for (const c of d.categorie) visible.set(c.id, { cat:c, voci:c.voci.filter(v => !v.nascosto) });
+  const groupOf = new Map();
+  for (const g of PAGE_GROUPS) for (const id of g) groupOf.set(id, g);
+
+  const catPages = [];
+  const done = new Set();
+  for (const c of d.categorie) {
+    if (done.has(c.id)) continue;
+    const g = groupOf.get(c.id);
+    if (g) {
+      g.forEach(id => done.add(id));
+      const members = g.map(id => visible.get(id)).filter(m => m && m.voci.length);
+      if (members.length) catPages.push({ type:'cat', members });
+    } else if (visible.get(c.id).voci.length) {
+      catPages.push({ type:'cat', members:[visible.get(c.id)] });
+    }
+  }
+  return [{ type:'cover' }, ...catPages, { type:'info' }];
 }
 function pageTitle(p) {
   if (!p || p.type === 'cover') return t(state.lang, 'cover');
   if (p.type === 'info') return t(state.lang, 'info');
-  return catName(p.cat.id, p.cat.nome, state.lang);
+  return p.members.map(m => catName(m.cat.id, m.cat.nome, state.lang)).join(' & ');
 }
 function special() {
   const d = state.data;
@@ -227,33 +246,37 @@ function buildPage(i, token) {
     frag.appendChild(c);
 
   } else if (p.type === 'cat') {
-    frag.appendChild(h('h2', 'htag', catName(p.cat.id, p.cat.nome, lang)));
-    const ul = h('ul', 'items');
-    for (const v of p.voci) {
-      const li = h('li', 'item');
-      const line = h('div', 'line');
-      const nm = h('span', 'nm'); mt(nm, v.nome, token);
-      const price = h('span', 'price', fmt(v.prezzo));
-      price.setAttribute('aria-label', priceAria(v.prezzo));
-      line.appendChild(nm);
-      line.appendChild(h('span', 'leader'));
-      line.appendChild(price);
-      li.appendChild(line);
-      if (v.desc) { const d = h('p', 'desc'); mt(d, v.desc, token); li.appendChild(d); }
-      const tags = h('div', 'tags');
-      if (v.delGiorno) tags.appendChild(h('span', 'badge', t(lang, 'pdg')));
-      for (const code of (v.allergeni || [])) {
-        const ab = document.createElement('abbr');
-        ab.className = 'allerg'; ab.textContent = code;
-        const full = allergName(code, lang);
-        ab.title = t(lang, 'contains') + ' ' + full;
-        ab.setAttribute('aria-label', t(lang, 'contains') + ' ' + full);
-        tags.appendChild(ab);
+    p.members.forEach((m, mi) => {
+      const sec = h('div', mi ? 'cat-section more' : 'cat-section');
+      sec.appendChild(h('h2', 'htag', catName(m.cat.id, m.cat.nome, lang)));
+      const ul = h('ul', 'items');
+      for (const v of m.voci) {
+        const li = h('li', 'item');
+        const line = h('div', 'line');
+        const nm = h('span', 'nm'); mt(nm, v.nome, token);
+        const price = h('span', 'price', fmt(v.prezzo));
+        price.setAttribute('aria-label', priceAria(v.prezzo));
+        line.appendChild(nm);
+        line.appendChild(h('span', 'leader'));
+        line.appendChild(price);
+        li.appendChild(line);
+        if (v.desc) { const d = h('p', 'desc'); mt(d, v.desc, token); li.appendChild(d); }
+        const tags = h('div', 'tags');
+        if (v.delGiorno) tags.appendChild(h('span', 'badge', t(lang, 'pdg')));
+        for (const code of (v.allergeni || [])) {
+          const ab = document.createElement('abbr');
+          ab.className = 'allerg'; ab.textContent = code;
+          const full = allergName(code, lang);
+          ab.title = t(lang, 'contains') + ' ' + full;
+          ab.setAttribute('aria-label', t(lang, 'contains') + ' ' + full);
+          tags.appendChild(ab);
+        }
+        if (tags.childNodes.length) li.appendChild(tags);
+        ul.appendChild(li);
       }
-      if (tags.childNodes.length) li.appendChild(tags);
-      ul.appendChild(li);
-    }
-    frag.appendChild(ul);
+      sec.appendChild(ul);
+      frag.appendChild(sec);
+    });
 
   } else { // info
     const d = state.data;
