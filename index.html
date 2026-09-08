@@ -62,6 +62,10 @@
   .cover .hint .swipe{display:inline-block;animation:nudge 1.8s ease-in-out infinite;}
   @keyframes nudge{0%,100%{transform:translateX(0);}50%{transform:translateX(5px);}}
 
+  /* Intestazione con logo (pagine interne) */
+  .masthead{flex:0 0 auto;display:flex;justify-content:center;align-items:center;padding-bottom:16px;}
+  .masthead img{width:86px;height:auto;display:block;box-shadow:0 4px 12px rgba(35,24,8,.2);}
+
   /* Titolo pagina */
   .htag{display:inline-block;margin:0 0 6px;background:var(--ink);color:var(--carta);font-size:15px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;}
   .cat-section.more{margin-top:30px;}
@@ -211,6 +215,13 @@ function h(tag, cls, txt) {
   if (txt != null) n.textContent = txt;
   return n;
 }
+// Intestazione con il logo, in cima alle pagine interne (decorativa per lo screen reader)
+function logoHeader() {
+  const hd = h('header', 'masthead');
+  const img = h('img'); img.src = 'logo.png'; img.alt = '';
+  hd.appendChild(img);
+  return hd;
+}
 function buildItem(v, lang, token) {
   const li = h('li', 'item');
   const line = h('div', 'line');
@@ -294,7 +305,11 @@ function buildPage(i, token) {
     box.appendChild(adm);
     page.appendChild(box);
   }
-  return page;
+  if (p.type === 'cover') return page;          // la copertina ha già il logo grande
+  const frag = document.createDocumentFragment();
+  frag.appendChild(logoHeader());               // intestazione col logo sulle pagine interne
+  frag.appendChild(page);
+  return frag;
 }
 
 /* ---------- Render della pagina base ---------- */
